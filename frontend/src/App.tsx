@@ -6,6 +6,7 @@ import { Auctions } from './pages/Auctions'
 import { AuctionDetail } from './pages/AuctionDetail'
 import { Login } from './pages/Login'
 import { Register } from './pages/Register'
+import { VerifyEmail } from './pages/VerifyEmail'
 import { Account } from './pages/Account'
 import { Admin } from './pages/Admin'
 import { NotFound } from './pages/NotFound'
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="/auctions/:slug" element={<AuctionDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/account" element={<Account />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />

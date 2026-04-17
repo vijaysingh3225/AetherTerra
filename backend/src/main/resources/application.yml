@@ -8,14 +8,23 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  flyway:
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
 
 aetherterra:
   jwt:
     secret: ${JWT_SECRET:aetherterra-dev-local-jwt-secret-key-for-development-only-2026}
     expiry-seconds: ${JWT_EXPIRY_SECONDS:86400}
-  flyway:
-    locations: classpath:db/migration
-    baseline-on-migrate: false
+  app:
+    base-url: ${APP_BASE_URL:http://localhost:5173}
+  mail:
+    from: ${MAIL_FROM:noreply@aetherterra.local}
 
 management:
   endpoints:
