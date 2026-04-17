@@ -1,0 +1,15 @@
+# Maven
+target/
+*.class
+
+# Spring Boot fat jar
+*.jar
+*.war
+
+# Logs
+*.log
+logs/
+
+# IntelliJ
+.idea/
+*.iml

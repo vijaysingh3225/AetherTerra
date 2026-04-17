@@ -1,0 +1,57 @@
+#!/bin/sh
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements. See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership. The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License. You may obtain a copy of the License at
+#
+#   https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# ----------------------------------------------------------------------------
+# Apache Maven Wrapper startup script, version 3.3.2
+# ----------------------------------------------------------------------------
+
+# If JAVA_HOME is set, use it; otherwise look for java in PATH
+if [ -n "$JAVA_HOME" ]; then
+    JAVACMD="$JAVA_HOME/bin/java"
+else
+    JAVACMD="java"
+fi
+
+# Resolve the wrapper properties file
+MAVEN_WRAPPER_PROPERTIES="./.mvn/wrapper/maven-wrapper.properties"
+
+# Download URL from properties
+DOWNLOAD_URL=$(grep '^wrapperUrl' "$MAVEN_WRAPPER_PROPERTIES" | cut -d= -f2- | tr -d '[:space:]')
+DISTRIBUTION_URL=$(grep '^distributionUrl' "$MAVEN_WRAPPER_PROPERTIES" | cut -d= -f2- | tr -d '[:space:]')
+
+# Maven home in user cache
+MAVEN_USER_HOME="${MAVEN_USER_HOME:-$HOME/.m2}"
+WRAPPER_JAR="$MAVEN_USER_HOME/wrapper/dists/$(basename "$DISTRIBUTION_URL" .zip)/maven-wrapper.jar"
+
+# Download wrapper jar if absent
+if [ ! -f "$WRAPPER_JAR" ]; then
+    mkdir -p "$(dirname "$WRAPPER_JAR")"
+    if command -v curl > /dev/null; then
+        curl -fsSL -o "$WRAPPER_JAR" "$DOWNLOAD_URL"
+    elif command -v wget > /dev/null; then
+        wget -q -O "$WRAPPER_JAR" "$DOWNLOAD_URL"
+    else
+        echo "ERROR: Neither curl nor wget found. Cannot download Maven wrapper." >&2
+        exit 1
+    fi
+fi
+
+exec "$JAVACMD" \
+    -classpath "$WRAPPER_JAR" \
+    "-Dmaven.multiModuleProjectDirectory=$MAVEN_WRAPPER_PROJECTBASEDIR" \
+    org.apache.maven.wrapper.MavenWrapperMain "$@"

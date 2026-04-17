@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/aetherterra_test
+    username: aetherterra
+    password: aetherterra
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    clean-on-validation-error: true
+
+logging:
+  level:
+    com.aetherterra: INFO

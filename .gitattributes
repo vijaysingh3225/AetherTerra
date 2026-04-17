@@ -1,0 +1,6 @@
+# Ensure Unix line endings for shell scripts
+backend/mvnw text eol=lf
+backend/mvnw.cmd text eol=crlf
+
+# Mark mvnw as executable in git
+backend/mvnw linguist-language=Shell
