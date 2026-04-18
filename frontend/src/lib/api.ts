@@ -11,6 +11,13 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   const text = await res.text()
   const json = text ? JSON.parse(text) : {}
 
+  if (res.status === 401) {
+    localStorage.removeItem('at_token')
+    localStorage.removeItem('at_user')
+    window.location.href = '/login'
+    throw new Error('Session expired. Please sign in again.')
+  }
+
   if (!res.ok) {
     throw new Error(json.message || `Request failed (${res.status})`)
   }

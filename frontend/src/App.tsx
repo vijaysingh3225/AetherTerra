@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { Layout } from './components/layout/Layout'
+import { ProtectedRoute } from './components/ProtectedRoute'
 import { Home } from './pages/Home'
 import { Auctions } from './pages/Auctions'
 import { AuctionDetail } from './pages/AuctionDetail'
@@ -23,9 +24,18 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
-          <Route path="/account" element={<Account />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/admin/users" element={<AdminUsers />} />
+
+          {/* Authenticated users only */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/account" element={<Account />} />
+          </Route>
+
+          {/* Admin only */}
+          <Route element={<ProtectedRoute adminOnly />}>
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+          </Route>
+
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
