@@ -29,7 +29,7 @@ Aether Terra is a clothing brand that sells 1-of-1 t-shirts. Every shirt is uniq
 ## MVP Scope (v1)
 
 - [x] Monorepo scaffold
-- [ ] User registration + email verification
+- [x] User registration + email verification
 - [ ] Login / logout (session or JWT)
 - [ ] Auction listing page
 - [ ] Auction detail page with bid form

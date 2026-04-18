@@ -103,6 +103,9 @@ public class AuthController {
         if (user == null || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             return ResponseEntity.status(401).body(ApiResponse.message("Invalid email or password"));
         }
+        if (user.getEmailVerifiedAt() == null) {
+            return ResponseEntity.status(403).body(ApiResponse.message("Please verify your email before signing in."));
+        }
         String token = jwtUtil.generate(user.getEmail(), user.getRole().name());
         return ResponseEntity.ok(ApiResponse.ok(new LoginResponse(token, user.getEmail(), user.getRole().name())));
     }

@@ -9,6 +9,7 @@ import { Register } from './pages/Register'
 import { VerifyEmail } from './pages/VerifyEmail'
 import { Account } from './pages/Account'
 import { Admin } from './pages/Admin'
+import { AdminUsers } from './pages/AdminUsers'
 import { NotFound } from './pages/NotFound'
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/account" element={<Account />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

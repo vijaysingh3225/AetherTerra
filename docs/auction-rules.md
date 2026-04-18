@@ -12,7 +12,7 @@
 A registered user must complete all three before their first bid is accepted:
 
 1. **Email verification** — must click the verification link sent at registration.
-2. **Shirt size selected** — size must be saved on the account. Required because shirts are made-to-order after the auction ends.
+2. **Shirt size selected** — size must be saved on the account before placing a bid. Prompted at bid time if not yet set; can also be set in advance via the Account page. Required because shirts are made-to-order after the auction ends.
 3. **Saved payment method** — a valid payment method must be attached to the account via Stripe (integration pending v2).
 
 ## Bidding Rules

@@ -7,10 +7,12 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   if (token) headers['Authorization'] = `Bearer ${token}`
 
   const res = await fetch(path, { ...options, headers })
-  const json = await res.json()
+
+  const text = await res.text()
+  const json = text ? JSON.parse(text) : {}
 
   if (!res.ok) {
-    throw new Error(json.message ?? 'Request failed')
+    throw new Error(json.message || `Request failed (${res.status})`)
   }
   return json.data as T
 }

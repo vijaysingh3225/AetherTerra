@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
@@ -58,16 +58,27 @@ export function Admin() {
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {[
-          { title: 'Auctions', desc: 'Create, schedule, and cancel auctions.' },
-          { title: 'Users', desc: 'View and manage registered users.' },
-          { title: 'Bids', desc: 'Monitor bid activity.' },
-          { title: 'Orders', desc: 'Post-auction fulfillment — Shopify integration pending.' },
-        ].map((card) => (
-          <div key={card.title} className="rounded-lg border border-neutral-200 bg-white p-5">
-            <h3 className="font-medium text-neutral-900">{card.title}</h3>
-            <p className="mt-1 text-sm text-neutral-500">{card.desc}</p>
-          </div>
-        ))}
+          { title: 'Auctions', desc: 'Create, schedule, and cancel auctions.', href: null },
+          { title: 'Users', desc: 'View and manage registered users.', href: '/admin/users' },
+          { title: 'Bids', desc: 'Monitor bid activity.', href: null },
+          { title: 'Orders', desc: 'Post-auction fulfillment — Shopify integration pending.', href: null },
+        ].map((card) =>
+          card.href ? (
+            <Link
+              key={card.title}
+              to={card.href}
+              className="rounded-lg border border-neutral-200 bg-white p-5 hover:border-neutral-400 hover:shadow-sm transition-all"
+            >
+              <h3 className="font-medium text-neutral-900">{card.title}</h3>
+              <p className="mt-1 text-sm text-neutral-500">{card.desc}</p>
+            </Link>
+          ) : (
+            <div key={card.title} className="rounded-lg border border-neutral-200 bg-white p-5 opacity-60">
+              <h3 className="font-medium text-neutral-900">{card.title}</h3>
+              <p className="mt-1 text-sm text-neutral-500">{card.desc}</p>
+            </div>
+          )
+        )}
       </div>
     </div>
   )

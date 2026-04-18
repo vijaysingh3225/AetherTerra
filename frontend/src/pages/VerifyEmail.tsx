@@ -17,14 +17,14 @@ export function VerifyEmail() {
     }
 
     fetch(`/api/v1/auth/verify-email?token=${encodeURIComponent(token)}`)
-      .then(res => res.json())
-      .then(json => {
-        if (json.message === 'Email verified. You can now sign in.') {
+      .then(async res => {
+        const json = await res.json()
+        if (res.ok) {
           setStatus('success')
         } else {
           setStatus('error')
         }
-        setMessage(json.message)
+        setMessage(json.message || 'Something went wrong. Please try again.')
       })
       .catch(() => {
         setStatus('error')
