@@ -1,12 +1,15 @@
+# Datasource is provided at runtime by Testcontainers @ServiceConnection — no URL needed here.
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/aetherterra_test
-    username: aetherterra
-    password: aetherterra
-    driver-class-name: org.postgresql.Driver
   flyway:
     clean-on-validation-error: true
+  mail:
+    host: localhost
+    port: 1025
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
 
 logging:
   level:
     com.aetherterra: INFO
+    org.flywaydb: INFO

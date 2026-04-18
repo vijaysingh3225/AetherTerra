@@ -1,0 +1,43 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  jpa:
+    show-sql: false
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+aetherterra:
+  app:
+    base-url: ${APP_BASE_URL}
+  mail:
+    from: ${MAIL_FROM}
+
+management:
+  endpoint:
+    health:
+      show-details: never
+
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+
+logging:
+  level:
+    com.aetherterra: INFO
+    org.flywaydb: INFO
+    org.hibernate: WARN
