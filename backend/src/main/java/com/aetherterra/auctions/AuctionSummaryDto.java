@@ -7,7 +7,10 @@ public record AuctionSummaryDto(
     String id,
     String slug,
     String title,
+    String description,
+    BigDecimal startingBid,
     BigDecimal currentBid,
+    Instant startsAt,
     Instant endsAt,
     AuctionStatus status
 ) {}

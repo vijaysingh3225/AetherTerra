@@ -2,40 +2,48 @@ package com.aetherterra.auctions;
 
 import com.aetherterra.common.ApiResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/auctions")
 public class AuctionController {
 
+    private final AuctionRepository auctionRepository;
+
+    public AuctionController(AuctionRepository auctionRepository) {
+        this.auctionRepository = auctionRepository;
+    }
+
     @GetMapping
     public ResponseEntity<ApiResponse<List<AuctionSummaryDto>>> listAuctions() {
-        // TODO: replace with real repository query once Auction entity is wired up
-        var mockAuctions = List.of(
-            new AuctionSummaryDto(
-                "1",
-                "terra-one",
-                "Terra One — Hand-printed Oversized Tee",
-                new BigDecimal("75.00"),
-                Instant.now().plus(2, ChronoUnit.DAYS),
-                AuctionStatus.LIVE
-            ),
-            new AuctionSummaryDto(
-                "2",
-                "void-series-01",
-                "Void Series 01 — Garment Dyed Drop",
-                new BigDecimal("120.00"),
-                Instant.now().plus(5, ChronoUnit.DAYS),
-                AuctionStatus.LIVE
-            )
+        var auctions = auctionRepository
+            .findByStatusInOrderByEndsAtAsc(List.of(AuctionStatus.LIVE, AuctionStatus.SCHEDULED, AuctionStatus.ENDED))
+            .stream()
+            .map(this::toSummary)
+            .toList();
+        return ResponseEntity.ok(ApiResponse.ok(auctions));
+    }
+
+    @GetMapping("/{slug}")
+    public ResponseEntity<ApiResponse<AuctionSummaryDto>> getAuction(@PathVariable String slug) {
+        return auctionRepository.findBySlug(slug)
+            .map(a -> ResponseEntity.ok(ApiResponse.ok(toSummary(a))))
+            .orElse(ResponseEntity.status(404).body(ApiResponse.message("Auction not found")));
+    }
+
+    private AuctionSummaryDto toSummary(Auction a) {
+        return new AuctionSummaryDto(
+            a.getId().toString(),
+            a.getSlug(),
+            a.getTitle(),
+            a.getDescription(),
+            a.getStartingBid(),
+            a.getCurrentBid(),
+            a.getStartsAt(),
+            a.getEndsAt(),
+            a.getStatus()
         );
-        return ResponseEntity.ok(ApiResponse.ok(mockAuctions));
     }
 }

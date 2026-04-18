@@ -1,6 +1,7 @@
 package com.aetherterra.auth;
 
 import com.aetherterra.AbstractIntegrationTest;
+import com.aetherterra.auctions.AuctionRepository;
 import com.aetherterra.users.User;
 import com.aetherterra.users.UserRepository;
 import com.aetherterra.users.UserRole;
@@ -30,12 +31,14 @@ class AuthControllerTest extends AbstractIntegrationTest {
     @Autowired ObjectMapper om;
     @Autowired UserRepository userRepo;
     @Autowired EmailVerificationTokenRepository tokenRepo;
+    @Autowired AuctionRepository auctionRepo;
     @Autowired PasswordEncoder encoder;
     @Autowired JwtUtil jwtUtil;
     @MockitoBean JavaMailSender mailSender;
 
     @BeforeEach
     void clean() {
+        auctionRepo.deleteAll();
         tokenRepo.deleteAll();
         userRepo.deleteAll();
     }
