@@ -45,23 +45,23 @@ class AuctionControllerTest extends AbstractIntegrationTest {
     void setup() {
         bidRepo.deleteAll();
         auctionRepo.deleteAll();
-        admin = userRepo.findByEmail("admin@aetherterra.com").orElseGet(() -> {
-            var u = new User();
-            u.setEmail("admin@aetherterra.com");
-            u.setPasswordHash(encoder.encode("admin123"));
-            u.setRole(UserRole.ADMIN);
-            u.setEmailVerifiedAt(Instant.now());
-            return userRepo.save(u);
-        });
-        bidder = userRepo.findByEmail("bidder@example.com").orElseGet(() -> {
-            var u = new User();
-            u.setEmail("bidder@example.com");
-            u.setPasswordHash(encoder.encode("secret123"));
-            u.setRole(UserRole.BUYER);
-            u.setEmailVerifiedAt(Instant.now());
-            u.setShirtSize("L");
-            return userRepo.save(u);
-        });
+        admin = userRepo.findByEmail("admin@aetherterra.com").orElseGet(User::new);
+        admin.setEmail("admin@aetherterra.com");
+        admin.setPasswordHash(encoder.encode("admin123"));
+        admin.setRole(UserRole.ADMIN);
+        admin.setEmailVerifiedAt(Instant.now());
+        admin = userRepo.save(admin);
+
+        bidder = userRepo.findByEmail("bidder@example.com").orElseGet(User::new);
+        bidder.setEmail("bidder@example.com");
+        bidder.setPasswordHash(encoder.encode("secret123"));
+        bidder.setRole(UserRole.BUYER);
+        bidder.setEmailVerifiedAt(Instant.now());
+        bidder.setShirtSize("L");
+        bidder.setPaymentMethodBrand("Visa");
+        bidder.setPaymentMethodLast4("4242");
+        bidder.setPaymentMethodAddedAt(Instant.now());
+        bidder = userRepo.save(bidder);
     }
 
     @AfterEach
@@ -260,6 +260,53 @@ class AuctionControllerTest extends AbstractIntegrationTest {
                 .contentType("application/json")
                 .content(om.writeValueAsString(Map.of("amount", 125.00))))
             .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void placeBid_requiresVerifiedEmail() throws Exception {
+        Auction auction = saveAuction("terra-one", AuctionStatus.LIVE);
+        bidder.setEmailVerifiedAt(null);
+        userRepo.save(bidder);
+        String token = jwtUtil.generate(bidder.getEmail(), bidder.getRole().name());
+
+        mvc.perform(post("/api/v1/auctions/" + auction.getSlug() + "/bids")
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content(om.writeValueAsString(Map.of("amount", 125.00))))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.message").value("Verify your email before placing a bid"));
+    }
+
+    @Test
+    void placeBid_requiresShirtSize() throws Exception {
+        Auction auction = saveAuction("terra-one", AuctionStatus.LIVE);
+        bidder.setShirtSize(null);
+        userRepo.save(bidder);
+        String token = jwtUtil.generate(bidder.getEmail(), bidder.getRole().name());
+
+        mvc.perform(post("/api/v1/auctions/" + auction.getSlug() + "/bids")
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content(om.writeValueAsString(Map.of("amount", 125.00))))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.message").value("Select your shirt size before placing a bid"));
+    }
+
+    @Test
+    void placeBid_requiresPaymentMethod() throws Exception {
+        Auction auction = saveAuction("terra-one", AuctionStatus.LIVE);
+        bidder.setPaymentMethodBrand(null);
+        bidder.setPaymentMethodLast4(null);
+        bidder.setPaymentMethodAddedAt(null);
+        userRepo.save(bidder);
+        String token = jwtUtil.generate(bidder.getEmail(), bidder.getRole().name());
+
+        mvc.perform(post("/api/v1/auctions/" + auction.getSlug() + "/bids")
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content(om.writeValueAsString(Map.of("amount", 125.00))))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.message").value("Save a payment method before placing a bid"));
     }
 
     // -------------------------------------------------------------------------

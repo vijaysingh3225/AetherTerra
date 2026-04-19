@@ -24,6 +24,15 @@ public class User {
     @Column(name = "email_verified_at")
     private Instant emailVerifiedAt;
 
+    @Column(name = "payment_method_brand")
+    private String paymentMethodBrand;
+
+    @Column(name = "payment_method_last4")
+    private String paymentMethodLast4;
+
+    @Column(name = "payment_method_added_at")
+    private Instant paymentMethodAddedAt;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserRole role = UserRole.BUYER;
@@ -50,6 +59,18 @@ public class User {
     public void setShirtSize(String shirtSize) { this.shirtSize = shirtSize; }
     public Instant getEmailVerifiedAt() { return emailVerifiedAt; }
     public void setEmailVerifiedAt(Instant emailVerifiedAt) { this.emailVerifiedAt = emailVerifiedAt; }
+    public String getPaymentMethodBrand() { return paymentMethodBrand; }
+    public void setPaymentMethodBrand(String paymentMethodBrand) { this.paymentMethodBrand = paymentMethodBrand; }
+    public String getPaymentMethodLast4() { return paymentMethodLast4; }
+    public void setPaymentMethodLast4(String paymentMethodLast4) { this.paymentMethodLast4 = paymentMethodLast4; }
+    public Instant getPaymentMethodAddedAt() { return paymentMethodAddedAt; }
+    public void setPaymentMethodAddedAt(Instant paymentMethodAddedAt) { this.paymentMethodAddedAt = paymentMethodAddedAt; }
+    public boolean isEmailVerified() { return emailVerifiedAt != null; }
+    public boolean hasShirtSize() { return shirtSize != null && !shirtSize.isBlank(); }
+    public boolean hasSavedPaymentMethod() {
+        return paymentMethodBrand != null && !paymentMethodBrand.isBlank()
+                && paymentMethodLast4 != null && !paymentMethodLast4.isBlank();
+    }
     public UserRole getRole() { return role; }
     public void setRole(UserRole role) { this.role = role; }
     public Instant getCreatedAt() { return createdAt; }

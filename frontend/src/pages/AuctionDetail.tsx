@@ -26,6 +26,18 @@ interface BidHistoryItem {
   bidder: string
 }
 
+interface UserProfile {
+  email: string
+  role: string
+  shirtSize: string | null
+  emailVerified: boolean
+  paymentMethodBrand: string | null
+  paymentMethodLast4: string | null
+  paymentMethodAddedAt: string | null
+}
+
+const shirtSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+
 function formatMoney(amount: number) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -75,6 +87,10 @@ export function AuctionDetail() {
   const { user } = useAuth()
   const [amount, setAmount] = useState('')
   const [feedback, setFeedback] = useState<string | null>(null)
+  const [setupFeedback, setSetupFeedback] = useState<string | null>(null)
+  const [shirtSize, setShirtSize] = useState('M')
+  const [brand, setBrand] = useState('')
+  const [last4, setLast4] = useState('')
 
   const detailQuery = useQuery({
     queryKey: ['auction', slug],
@@ -86,6 +102,45 @@ export function AuctionDetail() {
     queryKey: ['auction', slug, 'bids'],
     queryFn: () => apiFetch<BidHistoryItem[]>(`/api/v1/auctions/${slug}/bids`),
     enabled: Boolean(slug),
+  })
+
+  const profileQuery = useQuery({
+    queryKey: ['me'],
+    queryFn: () => apiFetch<UserProfile>('/api/v1/users/me'),
+    enabled: Boolean(user),
+  })
+
+  const saveSize = useMutation({
+    mutationFn: (nextSize: string) =>
+      apiFetch<UserProfile>('/api/v1/users/me', {
+        method: 'PATCH',
+        body: JSON.stringify({ shirtSize: nextSize }),
+      }),
+    onSuccess: async (profile) => {
+      setSetupFeedback('Shirt size saved. You are one step closer to bidding.')
+      setShirtSize(profile.shirtSize ?? 'M')
+      await queryClient.invalidateQueries({ queryKey: ['me'] })
+    },
+    onError: (error) => {
+      setSetupFeedback(error instanceof Error ? error.message : 'Unable to save shirt size.')
+    },
+  })
+
+  const savePaymentMethod = useMutation({
+    mutationFn: (payload: { brand: string; last4: string }) =>
+      apiFetch<UserProfile>('/api/v1/users/me/payment-method', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }),
+    onSuccess: async () => {
+      setSetupFeedback('Payment method saved. Your account is updated for bidding.')
+      setBrand('')
+      setLast4('')
+      await queryClient.invalidateQueries({ queryKey: ['me'] })
+    },
+    onError: (error) => {
+      setSetupFeedback(error instanceof Error ? error.message : 'Unable to save payment method.')
+    },
   })
 
   const placeBid = useMutation({
@@ -110,11 +165,43 @@ export function AuctionDetail() {
 
   const auction = detailQuery.data
   const bids = bidsQuery.data ?? []
+  const profile = profileQuery.data
   const displayBid = auction?.currentBid ?? auction?.startingBid ?? 0
   const countdownTarget = auction?.status === 'SCHEDULED' ? auction.startsAt : auction?.endsAt
   const countdown = useCountdown(countdownTarget ?? new Date().toISOString())
   const suggestedBid = auction ? ((auction.currentBid ?? auction.startingBid) + 5).toFixed(2) : ''
-  const canBid = Boolean(user) && auction?.status === 'LIVE'
+
+  const requirements = profile
+    ? [
+        {
+          key: 'email',
+          label: 'Verified email',
+          met: profile.emailVerified,
+          hint: 'Check your inbox and open the verification link.',
+        },
+        {
+          key: 'size',
+          label: 'Shirt size selected',
+          met: Boolean(profile.shirtSize),
+          hint: 'Pick the size you want us to make if you win.',
+        },
+        {
+          key: 'payment',
+          label: 'Saved payment method',
+          met: Boolean(profile.paymentMethodBrand && profile.paymentMethodLast4),
+          hint: 'Add a placeholder card now. Stripe comes later.',
+        },
+      ]
+    : []
+
+  const isBidReady = requirements.length > 0 && requirements.every((requirement) => requirement.met)
+  const canBid = Boolean(user) && auction?.status === 'LIVE' && isBidReady
+
+  useEffect(() => {
+    if (profile?.shirtSize) {
+      setShirtSize(profile.shirtSize)
+    }
+  }, [profile?.shirtSize])
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -129,8 +216,20 @@ export function AuctionDetail() {
     placeBid.mutate(numericAmount)
   }
 
+  function handleSizeSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setSetupFeedback(null)
+    saveSize.mutate(shirtSize)
+  }
+
+  function handlePaymentSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setSetupFeedback(null)
+    savePaymentMethod.mutate({ brand: brand.trim(), last4: last4.trim() })
+  }
+
   if (detailQuery.isLoading) {
-    return <p className="text-neutral-500">Loading auction…</p>
+    return <p className="text-neutral-500">Loading auction...</p>
   }
 
   if (detailQuery.isError || !auction) {
@@ -184,7 +283,7 @@ export function AuctionDetail() {
             </div>
           </div>
 
-          {bidsQuery.isLoading && <p className="mt-6 text-sm text-neutral-500">Loading bid history…</p>}
+          {bidsQuery.isLoading && <p className="mt-6 text-sm text-neutral-500">Loading bid history...</p>}
           {bidsQuery.isError && <p className="mt-6 text-sm text-red-500">Unable to load bid history.</p>}
 
           {!bidsQuery.isLoading && !bidsQuery.isError && bids.length === 0 && (
@@ -216,15 +315,39 @@ export function AuctionDetail() {
         <section className="rounded-3xl border border-neutral-200 bg-white p-6">
           <h2 className="text-lg font-semibold text-neutral-900">Place A Bid</h2>
           <p className="mt-2 text-sm leading-6 text-neutral-500">
-            Submit an amount above the current bid. Account requirement checks will be layered in next.
+            Live bidding stays locked until your account meets every pre-bid requirement.
           </p>
 
           <dl className="mt-6 space-y-3 text-sm">
             <InfoRow label="Starts" value={formatTimestamp(auction.startsAt)} />
             <InfoRow label="Ends" value={formatTimestamp(auction.endsAt)} />
             <InfoRow label="Current" value={formatMoney(displayBid)} />
-            <InfoRow label="Suggested" value={suggestedBid ? formatMoney(Number(suggestedBid)) : '—'} />
+            <InfoRow label="Suggested" value={suggestedBid ? formatMoney(Number(suggestedBid)) : '-'} />
           </dl>
+
+          {user && profileQuery.isLoading && (
+            <p className="mt-4 text-sm text-neutral-500">Checking bid requirements...</p>
+          )}
+
+          {user && profile && (
+            <div className="mt-6 space-y-3">
+              {requirements.map((requirement) => (
+                <div
+                  key={requirement.key}
+                  className={`rounded-2xl border px-4 py-3 text-sm ${
+                    requirement.met
+                      ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                      : 'border-amber-200 bg-amber-50 text-amber-800'
+                  }`}
+                >
+                  <p className="font-medium">
+                    {requirement.met ? 'Ready' : 'Needed'}: {requirement.label}
+                  </p>
+                  {!requirement.met && <p className="mt-1">{requirement.hint}</p>}
+                </div>
+              ))}
+            </div>
+          )}
 
           <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
             <label className="block">
@@ -246,7 +369,7 @@ export function AuctionDetail() {
               disabled={!canBid || placeBid.isPending}
               className="w-full rounded-2xl bg-neutral-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:bg-neutral-400"
             >
-              {placeBid.isPending ? 'Placing bid…' : 'Place Bid'}
+              {placeBid.isPending ? 'Placing bid...' : 'Place Bid'}
             </button>
           </form>
 
@@ -265,16 +388,99 @@ export function AuctionDetail() {
             </p>
           )}
 
+          {user && profile && !isBidReady && (
+            <p className="mt-4 text-sm text-neutral-500">
+              You can finish setup below or manage it from{' '}
+              <Link to="/account" className="font-medium text-neutral-900 underline underline-offset-4">
+                your account page
+              </Link>
+              .
+            </p>
+          )}
+
           {user && auction.status !== 'LIVE' && (
             <p className="mt-4 text-sm text-neutral-500">
               Bidding opens only while an auction is live.
             </p>
           )}
-
-          <div className="mt-6 rounded-2xl border border-dashed border-neutral-200 bg-neutral-50 px-4 py-4 text-sm text-neutral-500">
-            Required before bidding in the final flow: verified email, shirt size selected, and a saved payment method.
-          </div>
         </section>
+
+        {user && profile && !profile.emailVerified && (
+          <section className="rounded-3xl border border-amber-200 bg-amber-50 p-6">
+            <h3 className="text-lg font-semibold text-amber-900">Verify Your Email</h3>
+            <p className="mt-2 text-sm leading-6 text-amber-800">
+              Email verification is still required before your first bid can go through. Open the
+              verification link sent to {profile.email}.
+            </p>
+          </section>
+        )}
+
+        {user && profile && !profile.shirtSize && (
+          <section className="rounded-3xl border border-neutral-200 bg-white p-6">
+            <h3 className="text-lg font-semibold text-neutral-900">Set Shirt Size</h3>
+            <p className="mt-2 text-sm leading-6 text-neutral-500">
+              Save the size we should make if you win this auction.
+            </p>
+            <form className="mt-5 flex flex-col gap-3 sm:flex-row" onSubmit={handleSizeSubmit}>
+              <select
+                value={shirtSize}
+                onChange={(event) => setShirtSize(event.target.value)}
+                className="rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 outline-none focus:border-neutral-500"
+              >
+                {shirtSizes.map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="submit"
+                disabled={saveSize.isPending}
+                className="rounded-2xl bg-neutral-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:bg-neutral-400"
+              >
+                {saveSize.isPending ? 'Saving...' : 'Save size'}
+              </button>
+            </form>
+          </section>
+        )}
+
+        {user && profile && !(profile.paymentMethodBrand && profile.paymentMethodLast4) && (
+          <section className="rounded-3xl border border-neutral-200 bg-white p-6">
+            <h3 className="text-lg font-semibold text-neutral-900">Save Payment Method</h3>
+            <p className="mt-2 text-sm leading-6 text-neutral-500">
+              Add placeholder card details now so your account is bid-ready before Stripe lands.
+            </p>
+            <form className="mt-5 space-y-3" onSubmit={handlePaymentSubmit}>
+              <input
+                type="text"
+                value={brand}
+                onChange={(event) => setBrand(event.target.value)}
+                placeholder="Card brand"
+                className="w-full rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 outline-none focus:border-neutral-500"
+              />
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={4}
+                value={last4}
+                onChange={(event) => setLast4(event.target.value.replace(/\D/g, '').slice(0, 4))}
+                placeholder="Last 4 digits"
+                className="w-full rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 outline-none focus:border-neutral-500"
+              />
+              <button
+                type="submit"
+                disabled={savePaymentMethod.isPending}
+                className="w-full rounded-2xl bg-neutral-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:bg-neutral-400"
+              >
+                {savePaymentMethod.isPending ? 'Saving...' : 'Save card'}
+              </button>
+            </form>
+          </section>
+        )}
+
+        {setupFeedback && (
+          <p className="text-sm text-neutral-600">{setupFeedback}</p>
+        )}
       </aside>
     </div>
   )

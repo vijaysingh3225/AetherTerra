@@ -87,6 +87,18 @@ public class BidController {
             return ResponseEntity.status(401).body(ApiResponse.message("User not found"));
         }
 
+        if (!user.isEmailVerified()) {
+            return ResponseEntity.status(403).body(ApiResponse.message("Verify your email before placing a bid"));
+        }
+
+        if (!user.hasShirtSize()) {
+            return ResponseEntity.status(403).body(ApiResponse.message("Select your shirt size before placing a bid"));
+        }
+
+        if (!user.hasSavedPaymentMethod()) {
+            return ResponseEntity.status(403).body(ApiResponse.message("Save a payment method before placing a bid"));
+        }
+
         BigDecimal floor = auction.getCurrentBid() != null ? auction.getCurrentBid() : auction.getStartingBid();
         if (request.amount().compareTo(floor) <= 0) {
             return ResponseEntity.badRequest().body(ApiResponse.message("Bid must be greater than the current bid"));
