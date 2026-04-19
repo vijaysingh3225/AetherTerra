@@ -223,8 +223,9 @@ class AuthControllerTest extends AbstractIntegrationTest {
     private void doRegisterAndVerify(String email) throws Exception {
         doRegister(email);
         String token = tokenRepo.findAll().stream()
-            .filter(t -> t.getUser().getEmail().equals(email))
-            .findFirst().orElseThrow().getToken();
+            .map(EmailVerificationToken::getToken)
+            .findFirst()
+            .orElseThrow();
         mvc.perform(get("/api/v1/auth/verify-email").param("token", token))
             .andExpect(status().isOk());
     }

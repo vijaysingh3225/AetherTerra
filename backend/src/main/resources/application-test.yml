@@ -17,3 +17,8 @@ logging:
   level:
     com.aetherterra: INFO
     org.flywaydb: INFO
+
+management:
+  health:
+    mail:
+      enabled: false
