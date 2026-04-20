@@ -89,16 +89,17 @@ export function Account() {
   }
 
   return (
-    <div className="max-w-3xl space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold text-[var(--text-primary)]">My Account</h2>
+    <div className="max-w-3xl space-y-5">
+      <div className="mb-6">
+        <p className="eyebrow-label mb-3 text-xs font-medium">Account</p>
+        <h2 className="text-2xl font-light text-[var(--text-primary)]">My Account</h2>
         <p className="mt-2 text-sm text-[var(--text-secondary)]">
           Finish the setup required before your first live bid can be accepted.
         </p>
       </div>
 
-      <section className="surface-panel rounded-3xl p-6">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)]">Profile</h3>
+      <section className="surface-panel p-6">
+        <h3 className="text-sm font-medium uppercase tracking-widest text-[var(--text-secondary)]">Profile</h3>
         <dl className="mt-4 space-y-3 text-sm">
           <AccountRow label="Email" value={profile.email} />
           <AccountRow label="Role" value={profile.role} />
@@ -108,21 +109,21 @@ export function Account() {
           />
         </dl>
         {!profile.emailVerified && (
-          <p className="notice-warning mt-4 rounded-2xl px-4 py-3 text-sm">
+          <p className="notice-warning mt-4 px-4 py-3 text-sm">
             Verify your email from the inbox link before you place your first bid.
           </p>
         )}
       </section>
 
-      <section className="surface-panel rounded-3xl p-6">
+      <section className="surface-panel p-6">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Shirt Size</h3>
+            <h3 className="text-sm font-medium uppercase tracking-widest text-[var(--text-secondary)]">Shirt Size</h3>
             <p className="mt-1 text-sm text-[var(--text-secondary)]">
               Required because each auction shirt is made to order after the winner is confirmed.
             </p>
           </div>
-          <span className="status-upcoming rounded-full px-3 py-1 text-xs font-medium">
+          <span className="status-upcoming px-3 py-1 text-xs font-medium">
             {profile.shirtSize ?? 'Not set'}
           </span>
         </div>
@@ -131,7 +132,7 @@ export function Account() {
           <select
             value={shirtSize}
             onChange={(event) => setShirtSize(event.target.value)}
-            className="field-shell rounded-2xl px-4 py-3 text-sm outline-none"
+            className="field-shell rounded px-4 py-3 text-sm outline-none"
           >
             {shirtSizes.map((size) => (
               <option key={size} value={size}>
@@ -142,24 +143,24 @@ export function Account() {
           <button
             type="submit"
             disabled={saveSize.isPending}
-            className="btn-primary rounded-2xl px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
+            className="btn-primary rounded px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
           >
             {saveSize.isPending ? 'Saving...' : 'Save size'}
           </button>
         </form>
       </section>
 
-      <section className="surface-panel rounded-3xl p-6">
+      <section className="surface-panel p-6">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Payment Method</h3>
+            <h3 className="text-sm font-medium uppercase tracking-widest text-[var(--text-secondary)]">Payment Method</h3>
             <p className="mt-1 text-sm text-[var(--text-secondary)]">
               Stripe is still pending, so this stores placeholder card details for bid eligibility.
             </p>
           </div>
-          <span className="status-upcoming rounded-full px-3 py-1 text-xs font-medium">
+          <span className="status-upcoming px-3 py-1 text-xs font-medium">
             {profile.paymentMethodBrand && profile.paymentMethodLast4
-              ? `${profile.paymentMethodBrand} ending in ${profile.paymentMethodLast4}`
+              ? `${profile.paymentMethodBrand} ···· ${profile.paymentMethodLast4}`
               : 'Not saved'}
           </span>
         </div>
@@ -170,7 +171,7 @@ export function Account() {
             value={brand}
             onChange={(event) => setBrand(event.target.value)}
             placeholder="Card brand"
-            className="field-shell rounded-2xl px-4 py-3 text-sm outline-none"
+            className="field-shell rounded px-4 py-3 text-sm outline-none"
           />
           <input
             type="text"
@@ -179,12 +180,12 @@ export function Account() {
             value={last4}
             onChange={(event) => setLast4(event.target.value.replace(/\D/g, '').slice(0, 4))}
             placeholder="Last 4"
-            className="field-shell rounded-2xl px-4 py-3 text-sm outline-none"
+            className="field-shell rounded px-4 py-3 text-sm outline-none"
           />
           <button
             type="submit"
             disabled={savePaymentMethod.isPending}
-            className="btn-primary rounded-2xl px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
+            className="btn-primary rounded px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
           >
             {savePaymentMethod.isPending ? 'Saving...' : 'Save card'}
           </button>
@@ -192,7 +193,7 @@ export function Account() {
       </section>
 
       {feedback && (
-        <p className="notice-success rounded-2xl px-4 py-3 text-sm">{feedback}</p>
+        <p className="notice-success px-4 py-3 text-sm">{feedback}</p>
       )}
     </div>
   )

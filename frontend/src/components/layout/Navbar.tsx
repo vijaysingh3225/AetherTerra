@@ -10,51 +10,39 @@ export function Navbar() {
     navigate('/')
   }
 
+  const linkClass = ({ isActive }: { isActive: boolean }) =>
+    isActive
+      ? 'text-[var(--accent)] underline underline-offset-4 decoration-[var(--accent)]'
+      : 'transition-colors hover:text-[var(--text-primary)]'
+
   return (
-    <header className="border-b border-[var(--border-subtle)] bg-[rgba(11,13,16,0.82)] backdrop-blur-xl">
+    <header className="border-b border-[var(--border-subtle)] bg-[rgba(7,8,11,0.88)] backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link to="/" className="text-xl font-semibold tracking-tight text-[var(--text-primary)]">
+        <Link
+          to="/"
+          className="flex items-center gap-2.5 text-xs font-medium tracking-[0.28em] uppercase text-[var(--text-primary)]"
+        >
+          <span className="text-[var(--accent)]">✦</span>
           Aether Terra
         </Link>
         <nav className="flex items-center gap-6 text-sm text-[var(--text-secondary)]">
-          <NavLink
-            to="/auctions"
-            className={({ isActive }) =>
-              isActive
-                ? 'font-medium text-[var(--aether-blue)]'
-                : 'transition-colors hover:text-[var(--text-primary)]'
-            }
-          >
+          <NavLink to="/auctions" className={linkClass}>
             Auctions
           </NavLink>
 
           {user ? (
             <>
               {user.role === 'ADMIN' && (
-                <NavLink
-                  to="/admin"
-                  className={({ isActive }) =>
-                    isActive
-                      ? 'font-medium text-[var(--aether-blue)]'
-                      : 'transition-colors hover:text-[var(--text-primary)]'
-                  }
-                >
+                <NavLink to="/admin" className={linkClass}>
                   Admin
                 </NavLink>
               )}
-              <NavLink
-                to="/account"
-                className={({ isActive }) =>
-                  isActive
-                    ? 'font-medium text-[var(--aether-blue)]'
-                    : 'transition-colors hover:text-[var(--text-primary)]'
-                }
-              >
+              <NavLink to="/account" className={linkClass}>
                 Account
               </NavLink>
               <button
                 onClick={handleLogout}
-                className="btn-secondary rounded-xl px-4 py-1.5 transition-colors"
+                className="btn-secondary rounded px-4 py-1.5 text-sm transition-colors"
               >
                 Sign Out
               </button>
@@ -62,7 +50,7 @@ export function Navbar() {
           ) : (
             <NavLink
               to="/login"
-              className="btn-primary rounded-xl px-4 py-1.5 font-medium transition-all"
+              className="btn-primary rounded px-4 py-1.5 text-sm font-medium transition-all"
             >
               Sign In
             </NavLink>

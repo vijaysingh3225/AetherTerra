@@ -66,10 +66,10 @@ export function AdminUsers() {
           onClick={() => navigate('/admin')}
           className="accent-link text-sm transition-colors"
         >
-          Back to Dashboard
+          Dashboard
         </button>
         <span className="text-[var(--text-tertiary)]">/</span>
-        <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Users</h2>
+        <h2 className="text-2xl font-light text-[var(--text-primary)]">Users</h2>
       </div>
 
       <div className="mb-4 flex flex-wrap gap-3">
@@ -78,12 +78,12 @@ export function AdminUsers() {
           placeholder="Search by email..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(0) }}
-          className="field-shell w-64 rounded-xl px-3 py-2 text-sm outline-none"
+          className="field-shell w-64 rounded px-3 py-2 text-sm outline-none"
         />
         <select
           value={role}
           onChange={(e) => { setRole(e.target.value); setPage(0) }}
-          className="field-shell rounded-xl px-3 py-2 text-sm outline-none"
+          className="field-shell rounded px-3 py-2 text-sm outline-none"
         >
           <option value="">All roles</option>
           <option value="BUYER">Buyer</option>
@@ -92,7 +92,7 @@ export function AdminUsers() {
       </div>
 
       {deleteMutation.isError && (
-        <p className="notice-danger mb-3 rounded-xl px-4 py-2 text-sm">
+        <p className="notice-danger mb-3 px-4 py-2 text-sm">
           {(deleteMutation.error as Error).message}
         </p>
       )}
@@ -102,15 +102,15 @@ export function AdminUsers() {
 
       {data && (
         <>
-          <div className="surface-panel overflow-x-auto rounded-2xl">
+          <div className="surface-panel overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-[rgba(11,13,16,0.55)] text-left">
+              <thead className="border-b border-[var(--border-subtle)] text-left">
                 <tr>
-                  <th className="px-4 py-3 font-medium text-[var(--text-secondary)]">Email</th>
-                  <th className="px-4 py-3 font-medium text-[var(--text-secondary)]">Role</th>
-                  <th className="px-4 py-3 font-medium text-[var(--text-secondary)]">Shirt Size</th>
-                  <th className="px-4 py-3 font-medium text-[var(--text-secondary)]">Verified</th>
-                  <th className="px-4 py-3 font-medium text-[var(--text-secondary)]">Joined</th>
+                  <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-[var(--text-tertiary)]">Email</th>
+                  <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-[var(--text-tertiary)]">Role</th>
+                  <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-[var(--text-tertiary)]">Size</th>
+                  <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-[var(--text-tertiary)]">Verified</th>
+                  <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-[var(--text-tertiary)]">Joined</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
@@ -123,25 +123,23 @@ export function AdminUsers() {
                   </tr>
                 ) : (
                   data.content.map((u) => (
-                    <tr key={u.id} className="bg-transparent transition-colors hover:bg-[rgba(111,168,220,0.05)]">
+                    <tr key={u.id} className="transition-colors hover:bg-[rgba(184,148,90,0.04)]">
                       <td className="px-4 py-3 text-[var(--text-primary)]">{u.email}</td>
                       <td className="px-4 py-3">
                         <span
-                          className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium ${
-                            u.role === 'ADMIN'
-                              ? 'status-upcoming'
-                              : 'status-ended'
+                          className={`inline-block px-2.5 py-1 text-xs font-medium ${
+                            u.role === 'ADMIN' ? 'status-upcoming' : 'status-ended'
                           }`}
                         >
                           {u.role}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-[var(--text-secondary)]">{u.shirtSize ?? '-'}</td>
+                      <td className="px-4 py-3 text-[var(--text-secondary)]">{u.shirtSize ?? '—'}</td>
                       <td className="px-4 py-3">
                         {u.emailVerified ? (
-                          <span className="text-[var(--sage)] font-medium">Yes</span>
+                          <span className="text-xs font-medium text-[var(--accent)]">Yes</span>
                         ) : (
-                          <span className="text-[var(--text-tertiary)]">No</span>
+                          <span className="text-xs text-[var(--text-tertiary)]">No</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-[var(--text-secondary)]">
@@ -152,7 +150,7 @@ export function AdminUsers() {
                           <button
                             onClick={() => handleDelete(u.id, u.email)}
                             disabled={deleteMutation.isPending}
-                            className="text-xs font-medium text-[var(--champagne)] transition-colors hover:text-[var(--gold-soft)] disabled:opacity-50"
+                            className="text-xs font-medium text-[var(--text-tertiary)] transition-colors hover:text-[var(--danger-text)] disabled:opacity-50"
                           >
                             Delete
                           </button>
@@ -174,7 +172,7 @@ export function AdminUsers() {
                 <button
                   disabled={data.number === 0}
                   onClick={() => setPage((p) => p - 1)}
-                  className="btn-secondary rounded-lg px-3 py-1 disabled:opacity-40"
+                  className="btn-secondary rounded px-3 py-1 text-xs disabled:opacity-40"
                 >
                   Previous
                 </button>
@@ -184,7 +182,7 @@ export function AdminUsers() {
                 <button
                   disabled={data.number + 1 >= data.totalPages}
                   onClick={() => setPage((p) => p + 1)}
-                  className="btn-secondary rounded-lg px-3 py-1 disabled:opacity-40"
+                  className="btn-secondary rounded px-3 py-1 text-xs disabled:opacity-40"
                 >
                   Next
                 </button>

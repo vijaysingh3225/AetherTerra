@@ -1,36 +1,32 @@
 @import "tailwindcss";
 
 :root {
-  --page-bg: #0b0d10;
-  --section-bg: #12161b;
-  --card-bg: #1a2027;
-  --text-primary: #e8ecef;
-  --text-secondary: #a8b0b8;
-  --text-tertiary: #6e7781;
-  --border-subtle: #232a32;
-  --aether-blue: #6fa8dc;
-  --aether-blue-deep: #4c7fa8;
-  --indigo-muted: #5a6c8f;
-  --sage: #7a8f7c;
-  --moss: #4e5f52;
-  --gold-soft: #c6b37e;
-  --champagne: #d8cfa3;
-  --danger-bg: rgba(138, 63, 71, 0.22);
-  --danger-border: rgba(198, 103, 116, 0.32);
+  --page-bg: #07080b;
+  --section-bg: #0c0d11;
+  --card-bg: #111318;
+  --text-primary: #ede8e0;
+  --text-secondary: #8a8278;
+  --text-tertiary: #4e4a45;
+  --border-subtle: #1e1c1a;
+  --border-strong: #2e2b27;
+  --accent: #b8945a;
+  --accent-hover: #cba96c;
+  --accent-dim: #8a6e40;
+  --danger-bg: rgba(120, 50, 56, 0.22);
+  --danger-border: rgba(180, 80, 90, 0.30);
   --danger-text: #f0bcc3;
-  --success-bg: rgba(78, 95, 82, 0.26);
-  --success-border: rgba(122, 143, 124, 0.34);
-  --success-text: #dbe6dc;
-  --warning-bg: rgba(198, 179, 126, 0.14);
-  --warning-border: rgba(198, 179, 126, 0.34);
-  --warning-text: #e5d8ae;
+  --success-bg: rgba(60, 80, 60, 0.22);
+  --success-border: rgba(90, 120, 90, 0.30);
+  --success-text: #c8dcc8;
+  --warning-bg: rgba(184, 148, 90, 0.10);
+  --warning-border: rgba(184, 148, 90, 0.26);
+  --warning-text: #e0c898;
 }
 
 html {
   background:
-    radial-gradient(circle at top, rgba(111, 168, 220, 0.08), transparent 32%),
-    radial-gradient(circle at 85% 15%, rgba(90, 108, 143, 0.14), transparent 24%),
-    linear-gradient(180deg, #0f1318 0%, #0b0d10 100%);
+    radial-gradient(ellipse 80% 40% at 50% 0%, rgba(184, 148, 90, 0.07) 0%, transparent 60%),
+    #07080b;
 }
 
 body {
@@ -45,54 +41,51 @@ body {
 }
 
 ::selection {
-  background: rgba(111, 168, 220, 0.32);
+  background: rgba(184, 148, 90, 0.26);
   color: var(--text-primary);
 }
 
 .surface-panel {
-  background: linear-gradient(180deg, rgba(26, 32, 39, 0.96) 0%, rgba(18, 22, 27, 0.98) 100%);
+  background: var(--section-bg);
   border: 1px solid var(--border-subtle);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
 }
 
 .surface-card {
-  background: linear-gradient(180deg, rgba(26, 32, 39, 0.96) 0%, rgba(21, 26, 32, 1) 100%);
+  background: var(--card-bg);
   border: 1px solid var(--border-subtle);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
 }
 
 .surface-tint {
-  background:
-    linear-gradient(135deg, rgba(111, 168, 220, 0.08) 0%, rgba(26, 32, 39, 0.94) 42%, rgba(90, 108, 143, 0.08) 100%);
+  background: var(--section-bg);
   border: 1px solid var(--border-subtle);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+  border-top-color: rgba(184, 148, 90, 0.28);
 }
 
 .btn-primary {
-  border: 1px solid rgba(111, 168, 220, 0.44);
-  background: linear-gradient(180deg, var(--aether-blue) 0%, var(--aether-blue-deep) 100%);
-  color: var(--page-bg);
-  box-shadow: 0 12px 28px rgba(111, 168, 220, 0.2);
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #07080b;
 }
 
 .btn-primary:hover {
-  background: linear-gradient(180deg, #81b4e2 0%, var(--aether-blue-deep) 100%);
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 .btn-secondary {
-  border: 1px solid var(--border-subtle);
-  background: rgba(18, 22, 27, 0.9);
+  border: 1px solid var(--border-strong);
+  background: transparent;
   color: var(--text-primary);
 }
 
 .btn-secondary:hover {
-  border-color: rgba(111, 168, 220, 0.36);
-  background: rgba(26, 32, 39, 0.96);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .field-shell {
   border: 1px solid var(--border-subtle);
-  background: rgba(11, 13, 16, 0.72);
+  background: #07080b;
   color: var(--text-primary);
 }
 
@@ -101,38 +94,38 @@ body {
 }
 
 .field-shell:focus {
-  border-color: rgba(111, 168, 220, 0.72);
-  box-shadow: 0 0 0 3px rgba(111, 168, 220, 0.14);
+  border-color: var(--accent);
+  box-shadow: none;
 }
 
 .eyebrow-label {
-  color: var(--text-tertiary);
-  letter-spacing: 0.24em;
+  color: var(--accent);
+  letter-spacing: 0.22em;
   text-transform: uppercase;
 }
 
 .accent-link {
-  color: var(--aether-blue);
+  color: var(--accent);
 }
 
 .accent-link:hover {
-  color: #9cc3e8;
+  color: var(--accent-hover);
 }
 
 .status-live {
-  background: rgba(111, 168, 220, 0.12);
-  color: #b9d8f3;
-  border: 1px solid rgba(111, 168, 220, 0.28);
+  background: rgba(184, 148, 90, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(184, 148, 90, 0.32);
 }
 
 .status-upcoming {
-  background: rgba(90, 108, 143, 0.16);
-  color: #bec7da;
-  border: 1px solid rgba(90, 108, 143, 0.32);
+  background: rgba(110, 108, 105, 0.14);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-strong);
 }
 
 .status-ended {
-  background: rgba(35, 42, 50, 0.9);
+  background: transparent;
   color: var(--text-tertiary);
   border: 1px solid var(--border-subtle);
 }

@@ -237,25 +237,25 @@ export function AuctionDetail() {
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1.4fr_0.9fr]">
-      <section className="space-y-6">
-        <div className="surface-tint rounded-3xl p-8">
-          <p className="eyebrow-label text-xs font-semibold">Auction Detail</p>
+    <div className="grid gap-6 lg:grid-cols-[1.4fr_0.9fr]">
+      <section className="space-y-5">
+        <div className="surface-tint p-8">
+          <p className="eyebrow-label text-xs font-medium">Auction Detail</p>
           <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
             <div className="max-w-2xl">
-              <h1 className="text-3xl font-semibold tracking-tight text-[var(--text-primary)]">
+              <h1 className="text-3xl font-light tracking-tight text-[var(--text-primary)]">
                 {auction.title}
               </h1>
               <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
                 {auction.description ?? 'No description available yet.'}
               </p>
             </div>
-            <span className="status-upcoming rounded-full px-3 py-1 text-xs font-medium">
+            <span className="status-upcoming px-3 py-1 text-xs font-medium">
               {auction.status}
             </span>
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
+          <div className="mt-8 grid gap-3 sm:grid-cols-3">
             <StatCard
               label={auction.currentBid ? 'Current Bid' : 'Starting Bid'}
               value={formatMoney(displayBid)}
@@ -271,14 +271,12 @@ export function AuctionDetail() {
           </div>
         </div>
 
-        <section className="surface-panel rounded-3xl p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-lg font-semibold text-[var(--text-primary)]">Bid History</h2>
-              <p className="mt-1 text-sm text-[var(--text-secondary)]">
-                Public auction activity, newest bids first.
-              </p>
-            </div>
+        <section className="surface-panel p-6">
+          <div>
+            <h2 className="text-sm font-medium uppercase tracking-widest text-[var(--text-secondary)]">Bid History</h2>
+            <p className="mt-1 text-xs text-[var(--text-tertiary)]">
+              Public auction activity, newest bids first.
+            </p>
           </div>
 
           {bidsQuery.isLoading && <p className="mt-6 text-sm text-[var(--text-secondary)]">Loading bid history...</p>}
@@ -289,11 +287,11 @@ export function AuctionDetail() {
           )}
 
           {bids.length > 0 && (
-            <div className="mt-6 space-y-3">
+            <div className="mt-5 space-y-2">
               {bids.map((bid) => (
                 <div
                   key={bid.id}
-                  className="surface-card flex items-center justify-between rounded-2xl px-4 py-3"
+                  className="surface-card flex items-center justify-between px-4 py-3"
                 >
                   <div>
                     <p className="font-medium text-[var(--text-primary)]">{formatMoney(bid.amount)}</p>
@@ -309,10 +307,10 @@ export function AuctionDetail() {
         </section>
       </section>
 
-      <aside className="space-y-6">
-        <section className="surface-panel rounded-3xl p-6">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Place A Bid</h2>
-          <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
+      <aside className="space-y-5">
+        <section className="surface-panel p-6">
+          <h2 className="text-sm font-medium uppercase tracking-widest text-[var(--text-secondary)]">Place A Bid</h2>
+          <p className="mt-2 text-xs leading-6 text-[var(--text-tertiary)]">
             Live bidding stays locked until your account meets every pre-bid requirement.
           </p>
 
@@ -320,7 +318,7 @@ export function AuctionDetail() {
             <InfoRow label="Starts" value={formatTimestamp(auction.startsAt)} />
             <InfoRow label="Ends" value={formatTimestamp(auction.endsAt)} />
             <InfoRow label="Current" value={formatMoney(displayBid)} />
-            <InfoRow label="Suggested" value={suggestedBid ? formatMoney(Number(suggestedBid)) : '-'} />
+            <InfoRow label="Suggested" value={suggestedBid ? formatMoney(Number(suggestedBid)) : '—'} />
           </dl>
 
           {user && profileQuery.isLoading && (
@@ -328,28 +326,26 @@ export function AuctionDetail() {
           )}
 
           {user && profile && (
-            <div className="mt-6 space-y-3">
+            <div className="mt-6 space-y-2">
               {requirements.map((requirement) => (
                 <div
                   key={requirement.key}
-                  className={`rounded-2xl border px-4 py-3 text-sm ${
-                    requirement.met
-                      ? 'notice-success'
-                      : 'notice-warning'
+                  className={`border px-4 py-3 text-sm ${
+                    requirement.met ? 'notice-success' : 'notice-warning'
                   }`}
                 >
                   <p className="font-medium">
                     {requirement.met ? 'Ready' : 'Needed'}: {requirement.label}
                   </p>
-                  {!requirement.met && <p className="mt-1">{requirement.hint}</p>}
+                  {!requirement.met && <p className="mt-1 text-xs">{requirement.hint}</p>}
                 </div>
               ))}
             </div>
           )}
 
-          <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+          <form className="mt-6 space-y-3" onSubmit={handleSubmit}>
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">Your bid</span>
+              <span className="mb-2 block text-xs font-medium text-[var(--text-secondary)]">Your bid</span>
               <input
                 type="number"
                 min="0"
@@ -358,21 +354,21 @@ export function AuctionDetail() {
                 value={amount}
                 onChange={(event) => setAmount(event.target.value)}
                 disabled={!canBid || placeBid.isPending}
-                className="field-shell w-full rounded-2xl px-4 py-3 outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                className="field-shell w-full rounded px-4 py-3 outline-none disabled:cursor-not-allowed disabled:opacity-50"
               />
             </label>
 
             <button
               type="submit"
               disabled={!canBid || placeBid.isPending}
-              className="btn-primary w-full rounded-2xl px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
+              className="btn-primary w-full rounded px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
             >
               {placeBid.isPending ? 'Placing bid...' : 'Place Bid'}
             </button>
           </form>
 
           {feedback && (
-            <p className={`mt-4 rounded-2xl px-4 py-3 text-sm ${placeBid.isError ? 'notice-danger' : 'notice-success'}`}>
+            <p className={`mt-4 px-4 py-3 text-sm ${placeBid.isError ? 'notice-danger' : 'notice-success'}`}>
               {feedback}
             </p>
           )}
@@ -387,9 +383,9 @@ export function AuctionDetail() {
           )}
 
           {user && profile && !isBidReady && (
-            <p className="mt-4 text-sm text-[var(--text-secondary)]">
-              You can finish setup below or manage it from{' '}
-              <Link to="/account" className="accent-link font-medium underline underline-offset-4">
+            <p className="mt-4 text-xs text-[var(--text-tertiary)]">
+              Finish setup below or manage it from{' '}
+              <Link to="/account" className="accent-link underline underline-offset-4">
                 your account page
               </Link>
               .
@@ -397,16 +393,16 @@ export function AuctionDetail() {
           )}
 
           {user && auction.status !== 'LIVE' && (
-            <p className="mt-4 text-sm text-[var(--text-secondary)]">
+            <p className="mt-4 text-xs text-[var(--text-tertiary)]">
               Bidding opens only while an auction is live.
             </p>
           )}
         </section>
 
         {user && profile && !profile.emailVerified && (
-          <section className="notice-warning rounded-3xl p-6">
-            <h3 className="text-lg font-semibold">Verify Your Email</h3>
-            <p className="mt-2 text-sm leading-6">
+          <section className="notice-warning p-6">
+            <h3 className="text-sm font-medium uppercase tracking-widest">Verify Your Email</h3>
+            <p className="mt-2 text-xs leading-6">
               Email verification is still required before your first bid can go through. Open the
               verification link sent to {profile.email}.
             </p>
@@ -414,16 +410,16 @@ export function AuctionDetail() {
         )}
 
         {user && profile && !profile.shirtSize && (
-          <section className="surface-panel rounded-3xl p-6">
-            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Set Shirt Size</h3>
-            <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
+          <section className="surface-panel p-6">
+            <h3 className="text-sm font-medium uppercase tracking-widest text-[var(--text-secondary)]">Set Shirt Size</h3>
+            <p className="mt-2 text-xs leading-6 text-[var(--text-tertiary)]">
               Save the size we should make if you win this auction.
             </p>
-            <form className="mt-5 flex flex-col gap-3 sm:flex-row" onSubmit={handleSizeSubmit}>
+            <form className="mt-4 flex flex-col gap-3 sm:flex-row" onSubmit={handleSizeSubmit}>
               <select
                 value={shirtSize}
                 onChange={(event) => setShirtSize(event.target.value)}
-                className="field-shell rounded-2xl px-4 py-3 text-sm outline-none"
+                className="field-shell rounded px-4 py-3 text-sm outline-none"
               >
                 {shirtSizes.map((size) => (
                   <option key={size} value={size}>
@@ -434,7 +430,7 @@ export function AuctionDetail() {
               <button
                 type="submit"
                 disabled={saveSize.isPending}
-                className="btn-primary rounded-2xl px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
+                className="btn-primary rounded px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {saveSize.isPending ? 'Saving...' : 'Save size'}
               </button>
@@ -443,18 +439,18 @@ export function AuctionDetail() {
         )}
 
         {user && profile && !(profile.paymentMethodBrand && profile.paymentMethodLast4) && (
-          <section className="surface-panel rounded-3xl p-6">
-            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Save Payment Method</h3>
-            <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
+          <section className="surface-panel p-6">
+            <h3 className="text-sm font-medium uppercase tracking-widest text-[var(--text-secondary)]">Save Payment Method</h3>
+            <p className="mt-2 text-xs leading-6 text-[var(--text-tertiary)]">
               Add placeholder card details now so your account is bid-ready before Stripe lands.
             </p>
-            <form className="mt-5 space-y-3" onSubmit={handlePaymentSubmit}>
+            <form className="mt-4 space-y-3" onSubmit={handlePaymentSubmit}>
               <input
                 type="text"
                 value={brand}
                 onChange={(event) => setBrand(event.target.value)}
                 placeholder="Card brand"
-                className="field-shell w-full rounded-2xl px-4 py-3 text-sm outline-none"
+                className="field-shell w-full rounded px-4 py-3 text-sm outline-none"
               />
               <input
                 type="text"
@@ -463,12 +459,12 @@ export function AuctionDetail() {
                 value={last4}
                 onChange={(event) => setLast4(event.target.value.replace(/\D/g, '').slice(0, 4))}
                 placeholder="Last 4 digits"
-                className="field-shell w-full rounded-2xl px-4 py-3 text-sm outline-none"
+                className="field-shell w-full rounded px-4 py-3 text-sm outline-none"
               />
               <button
                 type="submit"
                 disabled={savePaymentMethod.isPending}
-                className="btn-primary w-full rounded-2xl px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
+                className="btn-primary w-full rounded px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {savePaymentMethod.isPending ? 'Saving...' : 'Save card'}
               </button>
@@ -477,7 +473,7 @@ export function AuctionDetail() {
         )}
 
         {setupFeedback && (
-          <p className="notice-success rounded-2xl px-4 py-3 text-sm">{setupFeedback}</p>
+          <p className="notice-success px-4 py-3 text-sm">{setupFeedback}</p>
         )}
       </aside>
     </div>
@@ -486,9 +482,9 @@ export function AuctionDetail() {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="surface-card rounded-2xl px-4 py-4">
+    <div className="surface-card px-4 py-4">
       <p className="eyebrow-label text-xs">{label}</p>
-      <p className="mt-2 text-xl font-semibold text-[var(--text-primary)]">{value}</p>
+      <p className="mt-2 text-xl font-light text-[var(--text-primary)]">{value}</p>
     </div>
   )
 }
@@ -496,7 +492,7 @@ function StatCard({ label, value }: { label: string; value: string }) {
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-3 last:border-b-0 last:pb-0">
-      <dt className="text-[var(--text-secondary)]">{label}</dt>
+      <dt className="text-xs text-[var(--text-secondary)]">{label}</dt>
       <dd className="font-medium text-[var(--text-primary)]">{value}</dd>
     </div>
   )

@@ -33,19 +33,19 @@ export function VerifyEmail() {
   }, [searchParams])
 
   return (
-    <div className="surface-panel mx-auto max-w-sm rounded-[1.75rem] px-8 py-12 text-center">
+    <div className="surface-panel mx-auto max-w-sm px-8 py-12 text-center">
       {status === 'loading' && (
         <p className="text-[var(--text-secondary)]">Verifying your email...</p>
       )}
 
       {status === 'success' && (
         <>
-          <div className="mb-4 text-4xl text-[var(--sage)]">✓</div>
-          <h2 className="mb-2 text-2xl font-semibold text-[var(--text-primary)]">You're verified</h2>
+          <div className="mb-4 text-3xl text-[var(--accent)]">✦</div>
+          <h2 className="mb-2 text-2xl font-light text-[var(--text-primary)]">You're verified</h2>
           <p className="mb-6 text-[var(--text-secondary)]">{message}</p>
           <Link
             to="/login"
-            className="btn-primary rounded-xl px-6 py-2 text-sm font-medium"
+            className="btn-primary rounded px-6 py-2.5 text-sm font-medium"
           >
             Sign In
           </Link>
@@ -54,9 +54,9 @@ export function VerifyEmail() {
 
       {status === 'error' && (
         <>
-          <h2 className="mb-2 text-2xl font-semibold text-[var(--text-primary)]">Verification failed</h2>
+          <h2 className="mb-2 text-2xl font-light text-[var(--text-primary)]">Verification failed</h2>
           <p className="mb-6 text-[var(--text-secondary)]">{message}</p>
-          <Link to="/register" className="accent-link text-sm underline">
+          <Link to="/register" className="accent-link text-sm underline underline-offset-4">
             Back to registration
           </Link>
         </>

@@ -63,7 +63,7 @@ function StatusBadge({ status }: { status: string }) {
     : status === 'SCHEDULED' ? 'status-upcoming'
     : 'status-ended'
   return (
-    <span className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium ${cls}`}>
+    <span className={`inline-block px-2.5 py-1 text-xs font-medium ${cls}`}>
       {status}
     </span>
   )
@@ -189,21 +189,20 @@ export function AdminAuctions() {
     <div>
       <div className="mb-6 flex items-center gap-3">
         <button onClick={() => navigate('/admin')} className="accent-link text-sm transition-colors">
-          Back to Dashboard
+          Dashboard
         </button>
         <span className="text-[var(--text-tertiary)]">/</span>
-        <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Auctions</h2>
+        <h2 className="text-2xl font-light text-[var(--text-primary)]">Auctions</h2>
       </div>
 
-      {/* Create / Edit form */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="surface-panel mb-6 rounded-2xl p-6">
-          <h3 className="mb-4 font-semibold text-[var(--text-primary)]">
+        <form onSubmit={handleSubmit} className="surface-panel mb-6 p-6">
+          <h3 className="mb-4 text-sm font-medium uppercase tracking-widest text-[var(--text-secondary)]">
             {mode === 'create' ? 'New Auction' : `Edit — ${editTarget?.title}`}
           </h3>
 
           {formError && (
-            <p className="notice-danger mb-4 rounded-xl px-4 py-2 text-sm">{formError}</p>
+            <p className="notice-danger mb-4 px-4 py-2 text-sm">{formError}</p>
           )}
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -213,7 +212,7 @@ export function AdminAuctions() {
                 required
                 value={form.title}
                 onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))}
-                className="field-shell w-full rounded-xl px-3 py-2 text-sm outline-none"
+                className="field-shell w-full rounded px-3 py-2 text-sm outline-none"
                 placeholder="e.g. Indigo Cascade 001"
               />
             </div>
@@ -224,7 +223,7 @@ export function AdminAuctions() {
                 rows={3}
                 value={form.description}
                 onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))}
-                className="field-shell w-full resize-none rounded-xl px-3 py-2 text-sm outline-none"
+                className="field-shell w-full resize-none rounded px-3 py-2 text-sm outline-none"
                 placeholder="Optional description of the shirt design..."
               />
             </div>
@@ -238,7 +237,7 @@ export function AdminAuctions() {
                 step="0.01"
                 value={form.startingBid}
                 onChange={(e) => setForm(f => ({ ...f, startingBid: e.target.value }))}
-                className="field-shell w-full rounded-xl px-3 py-2 text-sm outline-none"
+                className="field-shell w-full rounded px-3 py-2 text-sm outline-none"
                 placeholder="50.00"
               />
             </div>
@@ -249,7 +248,7 @@ export function AdminAuctions() {
                 <select
                   value={form.status}
                   onChange={(e) => setForm(f => ({ ...f, status: e.target.value }))}
-                  className="field-shell w-full rounded-xl px-3 py-2 text-sm outline-none"
+                  className="field-shell w-full rounded px-3 py-2 text-sm outline-none"
                 >
                   <option value="SCHEDULED">SCHEDULED</option>
                   <option value="LIVE">LIVE</option>
@@ -265,7 +264,7 @@ export function AdminAuctions() {
                 type="datetime-local"
                 value={form.startsAt}
                 onChange={(e) => setForm(f => ({ ...f, startsAt: e.target.value }))}
-                className="field-shell w-full rounded-xl px-3 py-2 text-sm outline-none"
+                className="field-shell w-full rounded px-3 py-2 text-sm outline-none"
               />
             </div>
 
@@ -276,7 +275,7 @@ export function AdminAuctions() {
                 type="datetime-local"
                 value={form.endsAt}
                 onChange={(e) => setForm(f => ({ ...f, endsAt: e.target.value }))}
-                className="field-shell w-full rounded-xl px-3 py-2 text-sm outline-none"
+                className="field-shell w-full rounded px-3 py-2 text-sm outline-none"
               />
             </div>
           </div>
@@ -285,14 +284,14 @@ export function AdminAuctions() {
             <button
               type="submit"
               disabled={saveMutation.isPending}
-              className="btn-primary rounded-xl px-5 py-2 text-sm font-medium disabled:opacity-50"
+              className="btn-primary rounded px-5 py-2 text-sm font-medium disabled:opacity-50"
             >
               {saveMutation.isPending ? 'Saving...' : mode === 'create' ? 'Create Auction' : 'Save Changes'}
             </button>
             <button
               type="button"
               onClick={() => setMode('list')}
-              className="btn-secondary rounded-xl px-5 py-2 text-sm"
+              className="btn-secondary rounded px-5 py-2 text-sm"
             >
               Cancel
             </button>
@@ -300,7 +299,6 @@ export function AdminAuctions() {
         </form>
       )}
 
-      {/* Filters + New button */}
       {!showForm && (
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <input
@@ -308,12 +306,12 @@ export function AdminAuctions() {
             placeholder="Search by title..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(0) }}
-            className="field-shell w-56 rounded-xl px-3 py-2 text-sm outline-none"
+            className="field-shell w-56 rounded px-3 py-2 text-sm outline-none"
           />
           <select
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(0) }}
-            className="field-shell rounded-xl px-3 py-2 text-sm outline-none"
+            className="field-shell rounded px-3 py-2 text-sm outline-none"
           >
             <option value="">All statuses</option>
             <option value="SCHEDULED">Scheduled</option>
@@ -323,7 +321,7 @@ export function AdminAuctions() {
           </select>
           <button
             onClick={openCreate}
-            className="btn-primary ml-auto rounded-xl px-4 py-2 text-sm font-medium"
+            className="btn-primary ml-auto rounded px-4 py-2 text-sm font-medium"
           >
             New Auction
           </button>
@@ -335,17 +333,17 @@ export function AdminAuctions() {
 
       {data && !showForm && (
         <>
-          <div className="surface-panel overflow-x-auto rounded-2xl">
+          <div className="surface-panel overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-[rgba(11,13,16,0.55)] text-left">
+              <thead className="border-b border-[var(--border-subtle)] text-left">
                 <tr>
-                  <th className="px-4 py-3 font-medium text-[var(--text-secondary)]">Title</th>
-                  <th className="px-4 py-3 font-medium text-[var(--text-secondary)]">Status</th>
-                  <th className="px-4 py-3 font-medium text-[var(--text-secondary)]">Starting Bid</th>
-                  <th className="px-4 py-3 font-medium text-[var(--text-secondary)]">Current Bid</th>
-                  <th className="px-4 py-3 font-medium text-[var(--text-secondary)]">Bids</th>
-                  <th className="px-4 py-3 font-medium text-[var(--text-secondary)]">Starts At</th>
-                  <th className="px-4 py-3 font-medium text-[var(--text-secondary)]">Ends At</th>
+                  <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-[var(--text-tertiary)]">Title</th>
+                  <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-[var(--text-tertiary)]">Status</th>
+                  <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-[var(--text-tertiary)]">Starting Bid</th>
+                  <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-[var(--text-tertiary)]">Current Bid</th>
+                  <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-[var(--text-tertiary)]">Bids</th>
+                  <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-[var(--text-tertiary)]">Starts At</th>
+                  <th className="px-4 py-3 text-xs font-medium uppercase tracking-wider text-[var(--text-tertiary)]">Ends At</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
@@ -358,7 +356,7 @@ export function AdminAuctions() {
                   </tr>
                 ) : (
                   data.content.map((a) => (
-                    <tr key={a.id} className="bg-transparent transition-colors hover:bg-[rgba(111,168,220,0.05)]">
+                    <tr key={a.id} className="transition-colors hover:bg-[rgba(184,148,90,0.04)]">
                       <td className="px-4 py-3">
                         <p className="font-medium text-[var(--text-primary)]">{a.title}</p>
                         <p className="text-xs text-[var(--text-tertiary)]">{a.slug}</p>
@@ -370,7 +368,7 @@ export function AdminAuctions() {
                         ${Number(a.startingBid).toFixed(2)}
                       </td>
                       <td className="px-4 py-3 text-[var(--text-secondary)]">
-                        {a.currentBid != null ? `$${Number(a.currentBid).toFixed(2)}` : '-'}
+                        {a.currentBid != null ? `$${Number(a.currentBid).toFixed(2)}` : '—'}
                       </td>
                       <td className="px-4 py-3 text-[var(--text-secondary)]">{a.bidCount}</td>
                       <td className="px-4 py-3 text-[var(--text-secondary)]">
@@ -384,7 +382,7 @@ export function AdminAuctions() {
                           {canEdit(a) && (
                             <button
                               onClick={() => openEdit(a)}
-                              className="text-xs font-medium text-[var(--aether-blue)] transition-colors hover:text-[#9cc3e8]"
+                              className="text-xs font-medium text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)]"
                             >
                               Edit
                             </button>
@@ -402,7 +400,7 @@ export function AdminAuctions() {
                             <button
                               onClick={() => handleDelete(a.id, a.title)}
                               disabled={deleteMutation.isPending}
-                              className="text-xs font-medium text-[var(--champagne)] transition-colors hover:text-[var(--gold-soft)] disabled:opacity-50"
+                              className="text-xs font-medium text-[var(--text-tertiary)] transition-colors hover:text-[var(--danger-text)] disabled:opacity-50"
                             >
                               Delete
                             </button>
@@ -425,7 +423,7 @@ export function AdminAuctions() {
                 <button
                   disabled={data.number === 0}
                   onClick={() => setPage((p) => p - 1)}
-                  className="btn-secondary rounded-lg px-3 py-1 disabled:opacity-40"
+                  className="btn-secondary rounded px-3 py-1 text-xs disabled:opacity-40"
                 >
                   Previous
                 </button>
@@ -433,7 +431,7 @@ export function AdminAuctions() {
                 <button
                   disabled={data.number + 1 >= data.totalPages}
                   onClick={() => setPage((p) => p + 1)}
-                  className="btn-secondary rounded-lg px-3 py-1 disabled:opacity-40"
+                  className="btn-secondary rounded px-3 py-1 text-xs disabled:opacity-40"
                 >
                   Next
                 </button>

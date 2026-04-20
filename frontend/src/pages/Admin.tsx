@@ -13,9 +13,9 @@ interface DashboardStats {
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="surface-panel rounded-2xl p-6">
-      <p className="text-sm text-[var(--text-secondary)]">{label}</p>
-      <p className="mt-2 text-3xl font-semibold text-[var(--text-primary)]">{value}</p>
+    <div className="surface-panel p-6">
+      <p className="text-xs uppercase tracking-widest text-[var(--text-tertiary)]">{label}</p>
+      <p className="mt-3 text-3xl font-light text-[var(--text-primary)]">{value}</p>
     </div>
   )
 }
@@ -40,7 +40,8 @@ export function Admin() {
   return (
     <div>
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Admin Dashboard</h2>
+        <p className="eyebrow-label mb-3 text-xs font-medium">Control Panel</p>
+        <h2 className="text-2xl font-light text-[var(--text-primary)]">Admin Dashboard</h2>
         <p className="mt-1 text-sm text-[var(--text-secondary)]">Signed in as {user.email}</p>
       </div>
 
@@ -48,7 +49,7 @@ export function Admin() {
       {isError && <p className="text-red-400">Failed to load dashboard.</p>}
 
       {data && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard label="Total Users" value={data.totalUsers} />
           <StatCard label="Live Auctions" value={data.liveAuctions} />
           <StatCard label="Total Bids" value={data.totalBids} />
@@ -56,26 +57,26 @@ export function Admin() {
         </div>
       )}
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {[
           { title: 'Auctions', desc: 'Create, schedule, and cancel auctions.', href: '/admin/auctions' },
           { title: 'Users', desc: 'View and manage registered users.', href: '/admin/users' },
           { title: 'Bids', desc: 'Monitor bid activity.', href: null },
-          { title: 'Orders', desc: 'Post-auction fulfillment - Shopify integration pending.', href: null },
+          { title: 'Orders', desc: 'Post-auction fulfillment — Shopify integration pending.', href: null },
         ].map((card) =>
           card.href ? (
             <Link
               key={card.title}
               to={card.href}
-              className="surface-panel rounded-2xl p-5 transition-all hover:border-[rgba(111,168,220,0.34)] hover:shadow-[0_18px_38px_rgba(0,0,0,0.24)]"
+              className="surface-panel p-5 transition-all hover:border-[rgba(184,148,90,0.40)]"
             >
-              <h3 className="font-medium text-[var(--text-primary)]">{card.title}</h3>
-              <p className="mt-1 text-sm text-[var(--text-secondary)]">{card.desc}</p>
+              <h3 className="text-sm font-medium text-[var(--text-primary)]">{card.title}</h3>
+              <p className="mt-1 text-xs text-[var(--text-secondary)]">{card.desc}</p>
             </Link>
           ) : (
-            <div key={card.title} className="surface-panel rounded-2xl p-5 opacity-65">
-              <h3 className="font-medium text-[var(--text-primary)]">{card.title}</h3>
-              <p className="mt-1 text-sm text-[var(--text-secondary)]">{card.desc}</p>
+            <div key={card.title} className="surface-panel p-5 opacity-50">
+              <h3 className="text-sm font-medium text-[var(--text-primary)]">{card.title}</h3>
+              <p className="mt-1 text-xs text-[var(--text-secondary)]">{card.desc}</p>
             </div>
           )
         )}

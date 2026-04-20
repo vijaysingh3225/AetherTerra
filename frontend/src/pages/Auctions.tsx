@@ -43,21 +43,21 @@ function useCountdown(target: string): string {
 function StatusBadge({ status }: { status: Auction['status'] }) {
   if (status === 'LIVE') {
     return (
-      <span className="status-live flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium">
-        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--aether-blue)]" />
+      <span className="status-live flex shrink-0 items-center gap-1.5 px-2.5 py-1 text-xs font-medium">
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--accent)]" />
         Live
       </span>
     )
   }
   if (status === 'SCHEDULED') {
     return (
-      <span className="status-upcoming shrink-0 rounded-full px-2.5 py-1 text-xs font-medium">
+      <span className="status-upcoming shrink-0 px-2.5 py-1 text-xs font-medium">
         Upcoming
       </span>
     )
   }
   return (
-    <span className="status-ended shrink-0 rounded-full px-2.5 py-1 text-xs font-medium">
+    <span className="status-ended shrink-0 px-2.5 py-1 text-xs font-medium">
       Ended
     </span>
   )
@@ -71,10 +71,10 @@ function AuctionCard({ auction }: { auction: Auction }) {
   return (
     <Link
       to={`/auctions/${auction.slug}`}
-      className="surface-card group flex flex-col gap-3 rounded-[1.4rem] p-5 transition-all hover:border-[rgba(111,168,220,0.34)] hover:shadow-[0_20px_42px_rgba(0,0,0,0.24)]"
+      className="surface-card group flex flex-col gap-3 p-5 transition-all hover:border-[rgba(184,148,90,0.40)]"
     >
       <div className="flex items-start justify-between gap-2">
-        <p className="font-medium leading-snug text-[var(--text-primary)] transition-colors group-hover:text-[var(--aether-blue)]">
+        <p className="font-medium leading-snug text-[var(--text-primary)] transition-colors group-hover:text-[var(--accent)]">
           {auction.title}
         </p>
         <StatusBadge status={auction.status} />
@@ -96,7 +96,7 @@ function AuctionCard({ auction }: { auction: Auction }) {
             <p className="text-xs text-[var(--text-tertiary)]">
               {auction.status === 'LIVE' ? 'Ends in' : 'Starts in'}
             </p>
-            <p className="font-medium text-[var(--aether-blue)]">{countdown}</p>
+            <p className="font-medium text-[var(--accent)]">{countdown}</p>
           </div>
         )}
       </div>
@@ -108,8 +108,8 @@ function Section({ title, auctions }: { title: string; auctions: Auction[] }) {
   if (auctions.length === 0) return null
   return (
     <section className="mb-10">
-      <h3 className="eyebrow-label mb-4 text-xs font-semibold">{title}</h3>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <h3 className="eyebrow-label mb-4 text-xs font-medium">{title}</h3>
+      <div className="grid gap-3 sm:grid-cols-2">
         {auctions.map((a) => <AuctionCard key={a.id} auction={a} />)}
       </div>
     </section>
@@ -131,10 +131,10 @@ export function Auctions() {
 
   return (
     <div className="max-w-4xl">
-      <h2 className="mb-3 text-2xl font-semibold text-[var(--text-primary)]">Auctions</h2>
-      <p className="mb-8 max-w-2xl text-sm leading-7 text-[var(--text-secondary)]">
-        Live auctions stay bright and active. The rest of the experience stays intentionally dark
-        so the bidding moments and shirt drops carry the emphasis.
+      <h2 className="mb-2 text-2xl font-light tracking-tight text-[var(--text-primary)]">Auctions</h2>
+      <p className="mb-8 max-w-xl text-sm leading-7 text-[var(--text-secondary)]">
+        Live auctions stay active. The rest of the experience stays intentionally dark so the
+        bidding moments and shirt drops carry the emphasis.
       </p>
 
       {data?.length === 0 && (

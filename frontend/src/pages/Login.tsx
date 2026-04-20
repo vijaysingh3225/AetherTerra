@@ -39,45 +39,46 @@ export function Login() {
   }
 
   return (
-    <div className="surface-panel mx-auto max-w-sm rounded-[1.75rem] p-8">
-      <h2 className="mb-2 text-2xl font-semibold text-[var(--text-primary)]">Sign In</h2>
+    <div className="surface-panel mx-auto max-w-sm p-8">
+      <p className="eyebrow-label mb-4 text-xs font-medium">Bidder Portal</p>
+      <h2 className="mb-2 text-2xl font-light text-[var(--text-primary)]">Sign In</h2>
       <p className="mb-6 text-sm text-[var(--text-secondary)]">Return to your bidder account.</p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {error && (
-          <p className="notice-danger rounded-xl px-4 py-2 text-sm">{error}</p>
+          <p className="notice-danger px-4 py-2 text-sm">{error}</p>
         )}
         <div>
-          <label className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">Email</label>
+          <label className="mb-1 block text-xs font-medium text-[var(--text-secondary)]">Email</label>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="field-shell w-full rounded-xl px-3 py-2 text-sm outline-none"
+            className="field-shell w-full rounded px-3 py-2 text-sm outline-none"
             placeholder="you@example.com"
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">Password</label>
+          <label className="mb-1 block text-xs font-medium text-[var(--text-secondary)]">Password</label>
           <input
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="field-shell w-full rounded-xl px-3 py-2 text-sm outline-none"
+            className="field-shell w-full rounded px-3 py-2 text-sm outline-none"
           />
         </div>
         <button
           type="submit"
           disabled={loading}
-          className="btn-primary rounded-xl py-2 text-sm font-medium transition-all disabled:opacity-50"
+          className="btn-primary rounded py-2.5 text-sm font-medium transition-all disabled:opacity-50"
         >
           {loading ? 'Signing in...' : 'Sign In'}
         </button>
       </form>
-      <p className="mt-4 text-center text-sm text-[var(--text-secondary)]">
+      <p className="mt-5 text-center text-sm text-[var(--text-secondary)]">
         Don't have an account?{' '}
-        <Link to="/register" className="accent-link underline">Register</Link>
+        <Link to="/register" className="accent-link underline underline-offset-4">Register</Link>
       </p>
     </div>
   )
