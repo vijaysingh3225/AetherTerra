@@ -229,30 +229,28 @@ export function AuctionDetail() {
   }
 
   if (detailQuery.isLoading) {
-    return <p className="text-neutral-500">Loading auction...</p>
+    return <p className="text-[var(--text-secondary)]">Loading auction...</p>
   }
 
   if (detailQuery.isError || !auction) {
-    return <p className="text-red-500">Auction not found.</p>
+    return <p className="text-red-400">Auction not found.</p>
   }
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1.4fr_0.9fr]">
       <section className="space-y-6">
-        <div className="rounded-3xl border border-neutral-200 bg-[linear-gradient(135deg,#f8fafc_0%,#ffffff_55%,#f5f5f4_100%)] p-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-neutral-400">
-            Auction Detail
-          </p>
+        <div className="surface-tint rounded-3xl p-8">
+          <p className="eyebrow-label text-xs font-semibold">Auction Detail</p>
           <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
             <div className="max-w-2xl">
-              <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">
+              <h1 className="text-3xl font-semibold tracking-tight text-[var(--text-primary)]">
                 {auction.title}
               </h1>
-              <p className="mt-3 text-sm leading-7 text-neutral-600">
+              <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
                 {auction.description ?? 'No description available yet.'}
               </p>
             </div>
-            <span className="rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-medium text-neutral-600">
+            <span className="status-upcoming rounded-full px-3 py-1 text-xs font-medium">
               {auction.status}
             </span>
           </div>
@@ -273,21 +271,21 @@ export function AuctionDetail() {
           </div>
         </div>
 
-        <section className="rounded-3xl border border-neutral-200 bg-white p-6">
+        <section className="surface-panel rounded-3xl p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-lg font-semibold text-neutral-900">Bid History</h2>
-              <p className="mt-1 text-sm text-neutral-500">
+              <h2 className="text-lg font-semibold text-[var(--text-primary)]">Bid History</h2>
+              <p className="mt-1 text-sm text-[var(--text-secondary)]">
                 Public auction activity, newest bids first.
               </p>
             </div>
           </div>
 
-          {bidsQuery.isLoading && <p className="mt-6 text-sm text-neutral-500">Loading bid history...</p>}
-          {bidsQuery.isError && <p className="mt-6 text-sm text-red-500">Unable to load bid history.</p>}
+          {bidsQuery.isLoading && <p className="mt-6 text-sm text-[var(--text-secondary)]">Loading bid history...</p>}
+          {bidsQuery.isError && <p className="mt-6 text-sm text-red-400">Unable to load bid history.</p>}
 
           {!bidsQuery.isLoading && !bidsQuery.isError && bids.length === 0 && (
-            <p className="mt-6 text-sm text-neutral-500">No bids yet. The first bid sets the pace.</p>
+            <p className="mt-6 text-sm text-[var(--text-secondary)]">No bids yet. The first bid sets the pace.</p>
           )}
 
           {bids.length > 0 && (
@@ -295,13 +293,13 @@ export function AuctionDetail() {
               {bids.map((bid) => (
                 <div
                   key={bid.id}
-                  className="flex items-center justify-between rounded-2xl border border-neutral-100 bg-neutral-50 px-4 py-3"
+                  className="surface-card flex items-center justify-between rounded-2xl px-4 py-3"
                 >
                   <div>
-                    <p className="font-medium text-neutral-900">{formatMoney(bid.amount)}</p>
-                    <p className="text-xs text-neutral-500">{bid.bidder}</p>
+                    <p className="font-medium text-[var(--text-primary)]">{formatMoney(bid.amount)}</p>
+                    <p className="text-xs text-[var(--text-secondary)]">{bid.bidder}</p>
                   </div>
-                  <p className="text-xs uppercase tracking-wide text-neutral-400">
+                  <p className="text-xs uppercase tracking-wide text-[var(--text-tertiary)]">
                     {formatTimestamp(bid.placedAt)}
                   </p>
                 </div>
@@ -312,9 +310,9 @@ export function AuctionDetail() {
       </section>
 
       <aside className="space-y-6">
-        <section className="rounded-3xl border border-neutral-200 bg-white p-6">
-          <h2 className="text-lg font-semibold text-neutral-900">Place A Bid</h2>
-          <p className="mt-2 text-sm leading-6 text-neutral-500">
+        <section className="surface-panel rounded-3xl p-6">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Place A Bid</h2>
+          <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
             Live bidding stays locked until your account meets every pre-bid requirement.
           </p>
 
@@ -326,7 +324,7 @@ export function AuctionDetail() {
           </dl>
 
           {user && profileQuery.isLoading && (
-            <p className="mt-4 text-sm text-neutral-500">Checking bid requirements...</p>
+            <p className="mt-4 text-sm text-[var(--text-secondary)]">Checking bid requirements...</p>
           )}
 
           {user && profile && (
@@ -336,8 +334,8 @@ export function AuctionDetail() {
                   key={requirement.key}
                   className={`rounded-2xl border px-4 py-3 text-sm ${
                     requirement.met
-                      ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
-                      : 'border-amber-200 bg-amber-50 text-amber-800'
+                      ? 'notice-success'
+                      : 'notice-warning'
                   }`}
                 >
                   <p className="font-medium">
@@ -351,7 +349,7 @@ export function AuctionDetail() {
 
           <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-neutral-700">Your bid</span>
+              <span className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">Your bid</span>
               <input
                 type="number"
                 min="0"
@@ -360,28 +358,28 @@ export function AuctionDetail() {
                 value={amount}
                 onChange={(event) => setAmount(event.target.value)}
                 disabled={!canBid || placeBid.isPending}
-                className="w-full rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 outline-none transition focus:border-neutral-500 disabled:cursor-not-allowed disabled:bg-neutral-100"
+                className="field-shell w-full rounded-2xl px-4 py-3 outline-none disabled:cursor-not-allowed disabled:opacity-50"
               />
             </label>
 
             <button
               type="submit"
               disabled={!canBid || placeBid.isPending}
-              className="w-full rounded-2xl bg-neutral-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:bg-neutral-400"
+              className="btn-primary w-full rounded-2xl px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
             >
               {placeBid.isPending ? 'Placing bid...' : 'Place Bid'}
             </button>
           </form>
 
           {feedback && (
-            <p className={`mt-4 text-sm ${placeBid.isError ? 'text-red-500' : 'text-green-600'}`}>
+            <p className={`mt-4 rounded-2xl px-4 py-3 text-sm ${placeBid.isError ? 'notice-danger' : 'notice-success'}`}>
               {feedback}
             </p>
           )}
 
           {!user && (
-            <p className="mt-4 text-sm text-neutral-500">
-              <Link to="/login" className="font-medium text-neutral-900 underline underline-offset-4">
+            <p className="mt-4 text-sm text-[var(--text-secondary)]">
+              <Link to="/login" className="accent-link font-medium underline underline-offset-4">
                 Sign in
               </Link>{' '}
               to place a bid.
@@ -389,9 +387,9 @@ export function AuctionDetail() {
           )}
 
           {user && profile && !isBidReady && (
-            <p className="mt-4 text-sm text-neutral-500">
+            <p className="mt-4 text-sm text-[var(--text-secondary)]">
               You can finish setup below or manage it from{' '}
-              <Link to="/account" className="font-medium text-neutral-900 underline underline-offset-4">
+              <Link to="/account" className="accent-link font-medium underline underline-offset-4">
                 your account page
               </Link>
               .
@@ -399,16 +397,16 @@ export function AuctionDetail() {
           )}
 
           {user && auction.status !== 'LIVE' && (
-            <p className="mt-4 text-sm text-neutral-500">
+            <p className="mt-4 text-sm text-[var(--text-secondary)]">
               Bidding opens only while an auction is live.
             </p>
           )}
         </section>
 
         {user && profile && !profile.emailVerified && (
-          <section className="rounded-3xl border border-amber-200 bg-amber-50 p-6">
-            <h3 className="text-lg font-semibold text-amber-900">Verify Your Email</h3>
-            <p className="mt-2 text-sm leading-6 text-amber-800">
+          <section className="notice-warning rounded-3xl p-6">
+            <h3 className="text-lg font-semibold">Verify Your Email</h3>
+            <p className="mt-2 text-sm leading-6">
               Email verification is still required before your first bid can go through. Open the
               verification link sent to {profile.email}.
             </p>
@@ -416,16 +414,16 @@ export function AuctionDetail() {
         )}
 
         {user && profile && !profile.shirtSize && (
-          <section className="rounded-3xl border border-neutral-200 bg-white p-6">
-            <h3 className="text-lg font-semibold text-neutral-900">Set Shirt Size</h3>
-            <p className="mt-2 text-sm leading-6 text-neutral-500">
+          <section className="surface-panel rounded-3xl p-6">
+            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Set Shirt Size</h3>
+            <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
               Save the size we should make if you win this auction.
             </p>
             <form className="mt-5 flex flex-col gap-3 sm:flex-row" onSubmit={handleSizeSubmit}>
               <select
                 value={shirtSize}
                 onChange={(event) => setShirtSize(event.target.value)}
-                className="rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 outline-none focus:border-neutral-500"
+                className="field-shell rounded-2xl px-4 py-3 text-sm outline-none"
               >
                 {shirtSizes.map((size) => (
                   <option key={size} value={size}>
@@ -436,7 +434,7 @@ export function AuctionDetail() {
               <button
                 type="submit"
                 disabled={saveSize.isPending}
-                className="rounded-2xl bg-neutral-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:bg-neutral-400"
+                className="btn-primary rounded-2xl px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {saveSize.isPending ? 'Saving...' : 'Save size'}
               </button>
@@ -445,9 +443,9 @@ export function AuctionDetail() {
         )}
 
         {user && profile && !(profile.paymentMethodBrand && profile.paymentMethodLast4) && (
-          <section className="rounded-3xl border border-neutral-200 bg-white p-6">
-            <h3 className="text-lg font-semibold text-neutral-900">Save Payment Method</h3>
-            <p className="mt-2 text-sm leading-6 text-neutral-500">
+          <section className="surface-panel rounded-3xl p-6">
+            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Save Payment Method</h3>
+            <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
               Add placeholder card details now so your account is bid-ready before Stripe lands.
             </p>
             <form className="mt-5 space-y-3" onSubmit={handlePaymentSubmit}>
@@ -456,7 +454,7 @@ export function AuctionDetail() {
                 value={brand}
                 onChange={(event) => setBrand(event.target.value)}
                 placeholder="Card brand"
-                className="w-full rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 outline-none focus:border-neutral-500"
+                className="field-shell w-full rounded-2xl px-4 py-3 text-sm outline-none"
               />
               <input
                 type="text"
@@ -465,12 +463,12 @@ export function AuctionDetail() {
                 value={last4}
                 onChange={(event) => setLast4(event.target.value.replace(/\D/g, '').slice(0, 4))}
                 placeholder="Last 4 digits"
-                className="w-full rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 outline-none focus:border-neutral-500"
+                className="field-shell w-full rounded-2xl px-4 py-3 text-sm outline-none"
               />
               <button
                 type="submit"
                 disabled={savePaymentMethod.isPending}
-                className="w-full rounded-2xl bg-neutral-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:bg-neutral-400"
+                className="btn-primary w-full rounded-2xl px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {savePaymentMethod.isPending ? 'Saving...' : 'Save card'}
               </button>
@@ -479,7 +477,7 @@ export function AuctionDetail() {
         )}
 
         {setupFeedback && (
-          <p className="text-sm text-neutral-600">{setupFeedback}</p>
+          <p className="notice-success rounded-2xl px-4 py-3 text-sm">{setupFeedback}</p>
         )}
       </aside>
     </div>
@@ -488,18 +486,18 @@ export function AuctionDetail() {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-white px-4 py-4">
-      <p className="text-xs uppercase tracking-[0.2em] text-neutral-400">{label}</p>
-      <p className="mt-2 text-xl font-semibold text-neutral-900">{value}</p>
+    <div className="surface-card rounded-2xl px-4 py-4">
+      <p className="eyebrow-label text-xs">{label}</p>
+      <p className="mt-2 text-xl font-semibold text-[var(--text-primary)]">{value}</p>
     </div>
   )
 }
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-neutral-100 pb-3 last:border-b-0 last:pb-0">
-      <dt className="text-neutral-500">{label}</dt>
-      <dd className="font-medium text-neutral-900">{value}</dd>
+    <div className="flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-3 last:border-b-0 last:pb-0">
+      <dt className="text-[var(--text-secondary)]">{label}</dt>
+      <dd className="font-medium text-[var(--text-primary)]">{value}</dd>
     </div>
   )
 }

@@ -14,3 +14,9 @@ Thumbs.db
 *.iml
 *.iws
 *.ipr
+
+# ---- Build artifacts ----
+frontend/node/
+
+# ---- Claude Code ----
+.claude/

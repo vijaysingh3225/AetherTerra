@@ -17,7 +17,7 @@ export function VerifyEmail() {
     }
 
     fetch(`/api/v1/auth/verify-email?token=${encodeURIComponent(token)}`)
-      .then(async res => {
+      .then(async (res) => {
         const json = await res.json()
         if (res.ok) {
           setStatus('success')
@@ -33,19 +33,19 @@ export function VerifyEmail() {
   }, [searchParams])
 
   return (
-    <div className="mx-auto max-w-sm py-12 text-center">
+    <div className="surface-panel mx-auto max-w-sm rounded-[1.75rem] px-8 py-12 text-center">
       {status === 'loading' && (
-        <p className="text-neutral-500">Verifying your email…</p>
+        <p className="text-[var(--text-secondary)]">Verifying your email...</p>
       )}
 
       {status === 'success' && (
         <>
-          <div className="mb-4 text-4xl">✓</div>
-          <h2 className="mb-2 text-2xl font-semibold text-neutral-900">You're verified</h2>
-          <p className="mb-6 text-neutral-500">{message}</p>
+          <div className="mb-4 text-4xl text-[var(--sage)]">✓</div>
+          <h2 className="mb-2 text-2xl font-semibold text-[var(--text-primary)]">You're verified</h2>
+          <p className="mb-6 text-[var(--text-secondary)]">{message}</p>
           <Link
             to="/login"
-            className="rounded-md bg-neutral-900 px-6 py-2 text-sm font-medium text-white hover:bg-neutral-700"
+            className="btn-primary rounded-xl px-6 py-2 text-sm font-medium"
           >
             Sign In
           </Link>
@@ -54,9 +54,9 @@ export function VerifyEmail() {
 
       {status === 'error' && (
         <>
-          <h2 className="mb-2 text-2xl font-semibold text-neutral-900">Verification failed</h2>
-          <p className="mb-6 text-neutral-500">{message}</p>
-          <Link to="/register" className="text-sm underline text-neutral-500 hover:text-neutral-900">
+          <h2 className="mb-2 text-2xl font-semibold text-[var(--text-primary)]">Verification failed</h2>
+          <p className="mb-6 text-[var(--text-secondary)]">{message}</p>
+          <Link to="/register" className="accent-link text-sm underline">
             Back to registration
           </Link>
         </>

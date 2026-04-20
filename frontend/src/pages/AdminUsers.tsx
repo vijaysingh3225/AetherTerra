@@ -64,26 +64,26 @@ export function AdminUsers() {
       <div className="mb-6 flex items-center gap-3">
         <button
           onClick={() => navigate('/admin')}
-          className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors"
+          className="accent-link text-sm transition-colors"
         >
-          ← Dashboard
+          Back to Dashboard
         </button>
-        <span className="text-neutral-300">/</span>
-        <h2 className="text-2xl font-semibold text-neutral-900">Users</h2>
+        <span className="text-[var(--text-tertiary)]">/</span>
+        <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Users</h2>
       </div>
 
       <div className="mb-4 flex flex-wrap gap-3">
         <input
           type="text"
-          placeholder="Search by email…"
+          placeholder="Search by email..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(0) }}
-          className="w-64 rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+          className="field-shell w-64 rounded-xl px-3 py-2 text-sm outline-none"
         />
         <select
           value={role}
           onChange={(e) => { setRole(e.target.value); setPage(0) }}
-          className="rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+          className="field-shell rounded-xl px-3 py-2 text-sm outline-none"
         >
           <option value="">All roles</option>
           <option value="BUYER">Buyer</option>
@@ -92,59 +92,59 @@ export function AdminUsers() {
       </div>
 
       {deleteMutation.isError && (
-        <p className="mb-3 text-sm text-red-500">
+        <p className="notice-danger mb-3 rounded-xl px-4 py-2 text-sm">
           {(deleteMutation.error as Error).message}
         </p>
       )}
 
-      {isLoading && <p className="text-neutral-500">Loading…</p>}
-      {isError && <p className="text-red-500">Failed to load users.</p>}
+      {isLoading && <p className="text-[var(--text-secondary)]">Loading...</p>}
+      {isError && <p className="text-red-400">Failed to load users.</p>}
 
       {data && (
         <>
-          <div className="overflow-x-auto rounded-lg border border-neutral-200">
+          <div className="surface-panel overflow-x-auto rounded-2xl">
             <table className="w-full text-sm">
-              <thead className="bg-neutral-50 text-left">
+              <thead className="bg-[rgba(11,13,16,0.55)] text-left">
                 <tr>
-                  <th className="px-4 py-3 font-medium text-neutral-500">Email</th>
-                  <th className="px-4 py-3 font-medium text-neutral-500">Role</th>
-                  <th className="px-4 py-3 font-medium text-neutral-500">Shirt Size</th>
-                  <th className="px-4 py-3 font-medium text-neutral-500">Verified</th>
-                  <th className="px-4 py-3 font-medium text-neutral-500">Joined</th>
+                  <th className="px-4 py-3 font-medium text-[var(--text-secondary)]">Email</th>
+                  <th className="px-4 py-3 font-medium text-[var(--text-secondary)]">Role</th>
+                  <th className="px-4 py-3 font-medium text-[var(--text-secondary)]">Shirt Size</th>
+                  <th className="px-4 py-3 font-medium text-[var(--text-secondary)]">Verified</th>
+                  <th className="px-4 py-3 font-medium text-[var(--text-secondary)]">Joined</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-100">
+              <tbody className="divide-y divide-[var(--border-subtle)]">
                 {data.content.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-10 text-center text-neutral-500">
+                    <td colSpan={6} className="px-4 py-10 text-center text-[var(--text-secondary)]">
                       No users found.
                     </td>
                   </tr>
                 ) : (
                   data.content.map((u) => (
-                    <tr key={u.id} className="bg-white hover:bg-neutral-50 transition-colors">
-                      <td className="px-4 py-3 text-neutral-900">{u.email}</td>
+                    <tr key={u.id} className="bg-transparent transition-colors hover:bg-[rgba(111,168,220,0.05)]">
+                      <td className="px-4 py-3 text-[var(--text-primary)]">{u.email}</td>
                       <td className="px-4 py-3">
                         <span
-                          className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
+                          className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium ${
                             u.role === 'ADMIN'
-                              ? 'bg-violet-100 text-violet-700'
-                              : 'bg-neutral-100 text-neutral-600'
+                              ? 'status-upcoming'
+                              : 'status-ended'
                           }`}
                         >
                           {u.role}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-neutral-600">{u.shirtSize ?? '—'}</td>
+                      <td className="px-4 py-3 text-[var(--text-secondary)]">{u.shirtSize ?? '-'}</td>
                       <td className="px-4 py-3">
                         {u.emailVerified ? (
-                          <span className="text-emerald-600 font-medium">Yes</span>
+                          <span className="text-[var(--sage)] font-medium">Yes</span>
                         ) : (
-                          <span className="text-neutral-400">No</span>
+                          <span className="text-[var(--text-tertiary)]">No</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-neutral-500">
+                      <td className="px-4 py-3 text-[var(--text-secondary)]">
                         {new Date(u.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-4 py-3 text-right">
@@ -152,7 +152,7 @@ export function AdminUsers() {
                           <button
                             onClick={() => handleDelete(u.id, u.email)}
                             disabled={deleteMutation.isPending}
-                            className="text-xs font-medium text-red-500 hover:text-red-700 disabled:opacity-50 transition-colors"
+                            className="text-xs font-medium text-[var(--champagne)] transition-colors hover:text-[var(--gold-soft)] disabled:opacity-50"
                           >
                             Delete
                           </button>
@@ -165,7 +165,7 @@ export function AdminUsers() {
             </table>
           </div>
 
-          <div className="mt-4 flex items-center justify-between text-sm text-neutral-500">
+          <div className="mt-4 flex items-center justify-between text-sm text-[var(--text-secondary)]">
             <span>
               {data.totalElements} user{data.totalElements !== 1 ? 's' : ''}
             </span>
@@ -174,7 +174,7 @@ export function AdminUsers() {
                 <button
                   disabled={data.number === 0}
                   onClick={() => setPage((p) => p - 1)}
-                  className="rounded border border-neutral-200 px-3 py-1 hover:bg-neutral-50 disabled:opacity-40 transition-colors"
+                  className="btn-secondary rounded-lg px-3 py-1 disabled:opacity-40"
                 >
                   Previous
                 </button>
@@ -184,7 +184,7 @@ export function AdminUsers() {
                 <button
                   disabled={data.number + 1 >= data.totalPages}
                   onClick={() => setPage((p) => p + 1)}
-                  className="rounded border border-neutral-200 px-3 py-1 hover:bg-neutral-50 disabled:opacity-40 transition-colors"
+                  className="btn-secondary rounded-lg px-3 py-1 disabled:opacity-40"
                 >
                   Next
                 </button>

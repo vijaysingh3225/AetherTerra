@@ -81,24 +81,24 @@ export function Account() {
   }, [profile?.shirtSize])
 
   if (profileQuery.isLoading) {
-    return <p className="text-neutral-500">Loading account...</p>
+    return <p className="text-[var(--text-secondary)]">Loading account...</p>
   }
 
   if (profileQuery.isError || !profile) {
-    return <p className="text-red-500">Unable to load your account right now.</p>
+    return <p className="text-red-400">Unable to load your account right now.</p>
   }
 
   return (
     <div className="max-w-3xl space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold text-neutral-900">My Account</h2>
-        <p className="mt-2 text-sm text-neutral-500">
+        <h2 className="text-2xl font-semibold text-[var(--text-primary)]">My Account</h2>
+        <p className="mt-2 text-sm text-[var(--text-secondary)]">
           Finish the setup required before your first live bid can be accepted.
         </p>
       </div>
 
-      <section className="rounded-3xl border border-neutral-200 bg-white p-6">
-        <h3 className="text-lg font-semibold text-neutral-900">Profile</h3>
+      <section className="surface-panel rounded-3xl p-6">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">Profile</h3>
         <dl className="mt-4 space-y-3 text-sm">
           <AccountRow label="Email" value={profile.email} />
           <AccountRow label="Role" value={profile.role} />
@@ -108,21 +108,21 @@ export function Account() {
           />
         </dl>
         {!profile.emailVerified && (
-          <p className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <p className="notice-warning mt-4 rounded-2xl px-4 py-3 text-sm">
             Verify your email from the inbox link before you place your first bid.
           </p>
         )}
       </section>
 
-      <section className="rounded-3xl border border-neutral-200 bg-white p-6">
+      <section className="surface-panel rounded-3xl p-6">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h3 className="text-lg font-semibold text-neutral-900">Shirt Size</h3>
-            <p className="mt-1 text-sm text-neutral-500">
+            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Shirt Size</h3>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
               Required because each auction shirt is made to order after the winner is confirmed.
             </p>
           </div>
-          <span className="rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-xs font-medium text-neutral-600">
+          <span className="status-upcoming rounded-full px-3 py-1 text-xs font-medium">
             {profile.shirtSize ?? 'Not set'}
           </span>
         </div>
@@ -131,7 +131,7 @@ export function Account() {
           <select
             value={shirtSize}
             onChange={(event) => setShirtSize(event.target.value)}
-            className="rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 outline-none focus:border-neutral-500"
+            className="field-shell rounded-2xl px-4 py-3 text-sm outline-none"
           >
             {shirtSizes.map((size) => (
               <option key={size} value={size}>
@@ -142,22 +142,22 @@ export function Account() {
           <button
             type="submit"
             disabled={saveSize.isPending}
-            className="rounded-2xl bg-neutral-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:bg-neutral-400"
+            className="btn-primary rounded-2xl px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
           >
             {saveSize.isPending ? 'Saving...' : 'Save size'}
           </button>
         </form>
       </section>
 
-      <section className="rounded-3xl border border-neutral-200 bg-white p-6">
+      <section className="surface-panel rounded-3xl p-6">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h3 className="text-lg font-semibold text-neutral-900">Payment Method</h3>
-            <p className="mt-1 text-sm text-neutral-500">
+            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Payment Method</h3>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
               Stripe is still pending, so this stores placeholder card details for bid eligibility.
             </p>
           </div>
-          <span className="rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-xs font-medium text-neutral-600">
+          <span className="status-upcoming rounded-full px-3 py-1 text-xs font-medium">
             {profile.paymentMethodBrand && profile.paymentMethodLast4
               ? `${profile.paymentMethodBrand} ending in ${profile.paymentMethodLast4}`
               : 'Not saved'}
@@ -170,7 +170,7 @@ export function Account() {
             value={brand}
             onChange={(event) => setBrand(event.target.value)}
             placeholder="Card brand"
-            className="rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 outline-none focus:border-neutral-500"
+            className="field-shell rounded-2xl px-4 py-3 text-sm outline-none"
           />
           <input
             type="text"
@@ -179,12 +179,12 @@ export function Account() {
             value={last4}
             onChange={(event) => setLast4(event.target.value.replace(/\D/g, '').slice(0, 4))}
             placeholder="Last 4"
-            className="rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 outline-none focus:border-neutral-500"
+            className="field-shell rounded-2xl px-4 py-3 text-sm outline-none"
           />
           <button
             type="submit"
             disabled={savePaymentMethod.isPending}
-            className="rounded-2xl bg-neutral-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:bg-neutral-400"
+            className="btn-primary rounded-2xl px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
           >
             {savePaymentMethod.isPending ? 'Saving...' : 'Save card'}
           </button>
@@ -192,7 +192,7 @@ export function Account() {
       </section>
 
       {feedback && (
-        <p className="text-sm text-neutral-600">{feedback}</p>
+        <p className="notice-success rounded-2xl px-4 py-3 text-sm">{feedback}</p>
       )}
     </div>
   )
@@ -200,9 +200,9 @@ export function Account() {
 
 function AccountRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-neutral-100 pb-3 last:border-b-0 last:pb-0">
-      <dt className="text-neutral-500">{label}</dt>
-      <dd className="font-medium text-neutral-900">{value}</dd>
+    <div className="flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-3 last:border-b-0 last:pb-0">
+      <dt className="text-[var(--text-secondary)]">{label}</dt>
+      <dd className="font-medium text-[var(--text-primary)]">{value}</dd>
     </div>
   )
 }

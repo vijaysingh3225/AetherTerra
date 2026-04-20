@@ -16,6 +16,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -43,6 +44,7 @@ public class SecurityConfig {
                 .requestMatchers(new AntPathRequestMatcher("/actuator/health"),
                                  new AntPathRequestMatcher("/actuator/info"),
                                  new AntPathRequestMatcher("/error")).permitAll()
+                .requestMatchers(new RegexRequestMatcher("^(?!/api(?:/|$)|/actuator(?:/|$)).*$", HttpMethod.GET.name())).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/v1/auth/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/v1/auctions", HttpMethod.GET.name()),
                                  new AntPathRequestMatcher("/api/v1/auctions/**", HttpMethod.GET.name())).permitAll()

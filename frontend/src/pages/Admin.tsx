@@ -13,9 +13,9 @@ interface DashboardStats {
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-lg border border-neutral-200 bg-white p-6">
-      <p className="text-sm text-neutral-500">{label}</p>
-      <p className="mt-2 text-3xl font-semibold text-neutral-900">{value}</p>
+    <div className="surface-panel rounded-2xl p-6">
+      <p className="text-sm text-[var(--text-secondary)]">{label}</p>
+      <p className="mt-2 text-3xl font-semibold text-[var(--text-primary)]">{value}</p>
     </div>
   )
 }
@@ -40,12 +40,12 @@ export function Admin() {
   return (
     <div>
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-neutral-900">Admin Dashboard</h2>
-        <p className="mt-1 text-sm text-neutral-500">Signed in as {user.email}</p>
+        <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Admin Dashboard</h2>
+        <p className="mt-1 text-sm text-[var(--text-secondary)]">Signed in as {user.email}</p>
       </div>
 
-      {isLoading && <p className="text-neutral-500">Loading stats…</p>}
-      {isError && <p className="text-red-500">Failed to load dashboard.</p>}
+      {isLoading && <p className="text-[var(--text-secondary)]">Loading stats...</p>}
+      {isError && <p className="text-red-400">Failed to load dashboard.</p>}
 
       {data && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -61,21 +61,21 @@ export function Admin() {
           { title: 'Auctions', desc: 'Create, schedule, and cancel auctions.', href: null },
           { title: 'Users', desc: 'View and manage registered users.', href: '/admin/users' },
           { title: 'Bids', desc: 'Monitor bid activity.', href: null },
-          { title: 'Orders', desc: 'Post-auction fulfillment — Shopify integration pending.', href: null },
+          { title: 'Orders', desc: 'Post-auction fulfillment - Shopify integration pending.', href: null },
         ].map((card) =>
           card.href ? (
             <Link
               key={card.title}
               to={card.href}
-              className="rounded-lg border border-neutral-200 bg-white p-5 hover:border-neutral-400 hover:shadow-sm transition-all"
+              className="surface-panel rounded-2xl p-5 transition-all hover:border-[rgba(111,168,220,0.34)] hover:shadow-[0_18px_38px_rgba(0,0,0,0.24)]"
             >
-              <h3 className="font-medium text-neutral-900">{card.title}</h3>
-              <p className="mt-1 text-sm text-neutral-500">{card.desc}</p>
+              <h3 className="font-medium text-[var(--text-primary)]">{card.title}</h3>
+              <p className="mt-1 text-sm text-[var(--text-secondary)]">{card.desc}</p>
             </Link>
           ) : (
-            <div key={card.title} className="rounded-lg border border-neutral-200 bg-white p-5 opacity-60">
-              <h3 className="font-medium text-neutral-900">{card.title}</h3>
-              <p className="mt-1 text-sm text-neutral-500">{card.desc}</p>
+            <div key={card.title} className="surface-panel rounded-2xl p-5 opacity-65">
+              <h3 className="font-medium text-[var(--text-primary)]">{card.title}</h3>
+              <p className="mt-1 text-sm text-[var(--text-secondary)]">{card.desc}</p>
             </div>
           )
         )}
