@@ -11,6 +11,7 @@ import { VerifyEmail } from './pages/VerifyEmail'
 import { Account } from './pages/Account'
 import { Admin } from './pages/Admin'
 import { AdminUsers } from './pages/AdminUsers'
+import { AdminAuctions } from './pages/AdminAuctions'
 import { NotFound } from './pages/NotFound'
 
 export default function App() {
@@ -34,6 +35,7 @@ export default function App() {
           <Route element={<ProtectedRoute adminOnly />}>
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/auctions" element={<AdminAuctions />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

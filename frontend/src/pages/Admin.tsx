@@ -58,7 +58,7 @@ export function Admin() {
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {[
-          { title: 'Auctions', desc: 'Create, schedule, and cancel auctions.', href: null },
+          { title: 'Auctions', desc: 'Create, schedule, and cancel auctions.', href: '/admin/auctions' },
           { title: 'Users', desc: 'View and manage registered users.', href: '/admin/users' },
           { title: 'Bids', desc: 'Monitor bid activity.', href: null },
           { title: 'Orders', desc: 'Post-auction fulfillment - Shopify integration pending.', href: null },

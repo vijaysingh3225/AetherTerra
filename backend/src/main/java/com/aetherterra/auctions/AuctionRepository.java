@@ -1,5 +1,7 @@
 package com.aetherterra.auctions;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Collection;
@@ -12,4 +14,12 @@ public interface AuctionRepository extends JpaRepository<Auction, UUID> {
     List<Auction> findByStatusInOrderByEndsAtAsc(Collection<AuctionStatus> statuses);
 
     Optional<Auction> findBySlug(String slug);
+
+    long countByStatus(AuctionStatus status);
+
+    Page<Auction> findByStatus(AuctionStatus status, Pageable pageable);
+
+    Page<Auction> findByTitleContainingIgnoreCase(String title, Pageable pageable);
+
+    Page<Auction> findByStatusAndTitleContainingIgnoreCase(AuctionStatus status, String title, Pageable pageable);
 }

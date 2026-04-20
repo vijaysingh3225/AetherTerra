@@ -15,7 +15,8 @@ public class SpaForwardController {
             "/verify-email",
             "/account",
             "/admin",
-            "/admin/users"
+            "/admin/users",
+            "/admin/auctions"
     })
     public String forward() {
         return "forward:/index.html";
