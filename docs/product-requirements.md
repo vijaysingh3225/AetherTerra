@@ -35,7 +35,7 @@ Aether Terra is a clothing brand that sells 1-of-1 t-shirts. Every shirt is uniq
 - [x] Auction detail page with bid form
 - [x] Bid placement with pre-bid requirement enforcement
 - [x] Admin CRUD for auctions
-- [ ] Basic account page (profile, size, placeholder for payment)
+- [x] Basic account page (profile, size, placeholder for payment)
 
 ## Out of Scope for v1
 

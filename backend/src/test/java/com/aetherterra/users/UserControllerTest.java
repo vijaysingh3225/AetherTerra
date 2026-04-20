@@ -96,4 +96,46 @@ class UserControllerTest extends AbstractIntegrationTest {
         mvc.perform(get("/api/v1/users/me"))
             .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void updateProfile_withoutToken_returns401() throws Exception {
+        mvc.perform(patch("/api/v1/users/me")
+                .contentType("application/json")
+                .content(om.writeValueAsString(Map.of("shirtSize", "M"))))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void savePaymentMethod_withoutToken_returns401() throws Exception {
+        mvc.perform(post("/api/v1/users/me/payment-method")
+                .contentType("application/json")
+                .content(om.writeValueAsString(Map.of("brand", "Visa", "last4", "4242"))))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void savePaymentMethod_overwritesPreviousCard() throws Exception {
+        mvc.perform(post("/api/v1/users/me/payment-method")
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content(om.writeValueAsString(Map.of("brand", "Visa", "last4", "4242"))))
+            .andExpect(status().isOk());
+
+        mvc.perform(post("/api/v1/users/me/payment-method")
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content(om.writeValueAsString(Map.of("brand", "Mastercard", "last4", "1234"))))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.paymentMethodBrand").value("Mastercard"))
+            .andExpect(jsonPath("$.data.paymentMethodLast4").value("1234"));
+    }
+
+    @Test
+    void savePaymentMethod_missingBrand_returns400() throws Exception {
+        mvc.perform(post("/api/v1/users/me/payment-method")
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content(om.writeValueAsString(Map.of("last4", "4242"))))
+            .andExpect(status().isBadRequest());
+    }
 }
