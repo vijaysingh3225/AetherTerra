@@ -14,7 +14,6 @@ import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -49,7 +48,18 @@ class UserControllerTest extends AbstractIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.email").value("profile@example.com"))
             .andExpect(jsonPath("$.data.emailVerified").value(true))
-            .andExpect(jsonPath("$.data.paymentMethodBrand").isEmpty());
+            .andExpect(jsonPath("$.data.paymentMethodReady").value(false));
+    }
+
+    @Test
+    void me_withPaymentMethodReady_returnsTrue() throws Exception {
+        user.setPaymentMethodReady(true);
+        userRepository.save(user);
+
+        mvc.perform(get("/api/v1/users/me")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.paymentMethodReady").value(true));
     }
 
     @Test
@@ -72,26 +82,6 @@ class UserControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void savePaymentMethod_persistsPlaceholderCard() throws Exception {
-        mvc.perform(post("/api/v1/users/me/payment-method")
-                .header("Authorization", "Bearer " + token)
-                .contentType("application/json")
-                .content(om.writeValueAsString(Map.of("brand", "Visa", "last4", "4242"))))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data.paymentMethodBrand").value("Visa"))
-            .andExpect(jsonPath("$.data.paymentMethodLast4").value("4242"));
-    }
-
-    @Test
-    void savePaymentMethod_invalidLast4_returns400() throws Exception {
-        mvc.perform(post("/api/v1/users/me/payment-method")
-                .header("Authorization", "Bearer " + token)
-                .contentType("application/json")
-                .content(om.writeValueAsString(Map.of("brand", "Visa", "last4", "42"))))
-            .andExpect(status().isBadRequest());
-    }
-
-    @Test
     void me_withoutToken_returns401() throws Exception {
         mvc.perform(get("/api/v1/users/me"))
             .andExpect(status().isUnauthorized());
@@ -103,39 +93,5 @@ class UserControllerTest extends AbstractIntegrationTest {
                 .contentType("application/json")
                 .content(om.writeValueAsString(Map.of("shirtSize", "M"))))
             .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void savePaymentMethod_withoutToken_returns401() throws Exception {
-        mvc.perform(post("/api/v1/users/me/payment-method")
-                .contentType("application/json")
-                .content(om.writeValueAsString(Map.of("brand", "Visa", "last4", "4242"))))
-            .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void savePaymentMethod_overwritesPreviousCard() throws Exception {
-        mvc.perform(post("/api/v1/users/me/payment-method")
-                .header("Authorization", "Bearer " + token)
-                .contentType("application/json")
-                .content(om.writeValueAsString(Map.of("brand", "Visa", "last4", "4242"))))
-            .andExpect(status().isOk());
-
-        mvc.perform(post("/api/v1/users/me/payment-method")
-                .header("Authorization", "Bearer " + token)
-                .contentType("application/json")
-                .content(om.writeValueAsString(Map.of("brand", "Mastercard", "last4", "1234"))))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.data.paymentMethodBrand").value("Mastercard"))
-            .andExpect(jsonPath("$.data.paymentMethodLast4").value("1234"));
-    }
-
-    @Test
-    void savePaymentMethod_missingBrand_returns400() throws Exception {
-        mvc.perform(post("/api/v1/users/me/payment-method")
-                .header("Authorization", "Bearer " + token)
-                .contentType("application/json")
-                .content(om.writeValueAsString(Map.of("last4", "4242"))))
-            .andExpect(status().isBadRequest());
     }
 }

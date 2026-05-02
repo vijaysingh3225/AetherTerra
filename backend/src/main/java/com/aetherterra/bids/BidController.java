@@ -95,8 +95,12 @@ public class BidController {
             return ResponseEntity.status(403).body(ApiResponse.message("Select your shirt size before placing a bid"));
         }
 
-        if (!user.hasSavedPaymentMethod()) {
+        if (!user.isPaymentMethodReady()) {
             return ResponseEntity.status(403).body(ApiResponse.message("Save a payment method before placing a bid"));
+        }
+
+        if (auction.getCreatedById().equals(user.getId())) {
+            return ResponseEntity.badRequest().body(ApiResponse.message("Auction creators cannot bid on their own auctions"));
         }
 
         BigDecimal floor = auction.getCurrentBid() != null ? auction.getCurrentBid() : auction.getStartingBid();

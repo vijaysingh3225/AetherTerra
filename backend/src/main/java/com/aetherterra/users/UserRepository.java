@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
+    Optional<User> findByStripeCustomerId(String stripeCustomerId);
     Page<User> findByEmailContainingIgnoreCase(String email, Pageable pageable);
     Page<User> findByEmailContainingIgnoreCaseAndRole(String email, UserRole role, Pageable pageable);
 }

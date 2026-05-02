@@ -71,7 +71,7 @@ function AuctionCard({ auction }: { auction: Auction }) {
   return (
     <Link
       to={`/auctions/${auction.slug}`}
-      className="surface-card group flex flex-col gap-3 p-5 transition-all hover:border-[rgba(184,148,90,0.40)]"
+      className="surface-card group flex flex-col gap-3 p-5 transition-all hover:border-[rgba(200,136,10,0.30)]"
     >
       <div className="flex items-start justify-between gap-2">
         <p className="font-medium leading-snug text-[var(--text-primary)] transition-colors group-hover:text-[var(--accent)]">

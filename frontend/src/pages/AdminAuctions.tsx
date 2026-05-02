@@ -20,6 +20,20 @@ interface AuctionAdmin {
   bidCount: number
 }
 
+interface AuctionOrder {
+  id: string
+  auctionId: string
+  userId: string
+  amount: number
+  currency: string
+  shirtSize: string | null
+  provider: string
+  providerOrderId: string | null
+  checkoutUrl: string | null
+  status: string
+  createdAt: string
+}
+
 interface SpringPage<T> {
   content: T[]
   totalElements: number
@@ -79,6 +93,7 @@ export function AdminAuctions() {
   const [page, setPage] = useState(0)
   const [mode, setMode] = useState<'list' | 'create' | 'edit'>('list')
   const [editTarget, setEditTarget] = useState<AuctionAdmin | null>(null)
+  const [orderAuctionId, setOrderAuctionId] = useState<string | null>(null)
   const [form, setForm] = useState<FormState>({
     title: '', description: '', startingBid: '',
     startsAt: defaultStartsAt(), endsAt: defaultEndsAt(), status: '',
@@ -180,6 +195,13 @@ export function AdminAuctions() {
   const canEdit = (a: AuctionAdmin) => a.status === 'SCHEDULED'
   const canCancel = (a: AuctionAdmin) => a.status === 'SCHEDULED' || a.status === 'LIVE'
   const canDelete = (a: AuctionAdmin) => a.status === 'SCHEDULED' && a.bidCount === 0
+
+  const orderQuery = useQuery({
+    queryKey: ['admin', 'auction-order', orderAuctionId],
+    queryFn: () => apiFetch<AuctionOrder>(`/api/v1/admin/auctions/${orderAuctionId}/order`),
+    enabled: orderAuctionId !== null,
+    retry: false,
+  })
 
   if (!user || user.role !== 'ADMIN') return null
 
@@ -284,14 +306,14 @@ export function AdminAuctions() {
             <button
               type="submit"
               disabled={saveMutation.isPending}
-              className="btn-primary rounded px-5 py-2 text-sm font-medium disabled:opacity-50"
+              className="btn-primary px-5 py-2 text-sm font-medium disabled:opacity-50"
             >
               {saveMutation.isPending ? 'Saving...' : mode === 'create' ? 'Create Auction' : 'Save Changes'}
             </button>
             <button
               type="button"
               onClick={() => setMode('list')}
-              className="btn-secondary rounded px-5 py-2 text-sm"
+              className="btn-secondary px-5 py-2 text-sm"
             >
               Cancel
             </button>
@@ -321,7 +343,7 @@ export function AdminAuctions() {
           </select>
           <button
             onClick={openCreate}
-            className="btn-primary ml-auto rounded px-4 py-2 text-sm font-medium"
+            className="btn-primary ml-auto px-4 py-2 text-sm font-medium"
           >
             New Auction
           </button>
@@ -356,7 +378,7 @@ export function AdminAuctions() {
                   </tr>
                 ) : (
                   data.content.map((a) => (
-                    <tr key={a.id} className="transition-colors hover:bg-[rgba(184,148,90,0.04)]">
+                    <tr key={a.id} className="transition-colors hover:bg-[rgba(200,136,10,0.05)]">
                       <td className="px-4 py-3">
                         <p className="font-medium text-[var(--text-primary)]">{a.title}</p>
                         <p className="text-xs text-[var(--text-tertiary)]">{a.slug}</p>
@@ -405,6 +427,14 @@ export function AdminAuctions() {
                               Delete
                             </button>
                           )}
+                          {a.status === 'ENDED' && (
+                            <button
+                              onClick={() => setOrderAuctionId(a.id)}
+                              className="text-xs font-medium text-[var(--accent)] transition-colors hover:opacity-80"
+                            >
+                              Order
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -423,7 +453,7 @@ export function AdminAuctions() {
                 <button
                   disabled={data.number === 0}
                   onClick={() => setPage((p) => p - 1)}
-                  className="btn-secondary rounded px-3 py-1 text-xs disabled:opacity-40"
+                  className="btn-secondary px-3 py-1 text-xs disabled:opacity-40"
                 >
                   Previous
                 </button>
@@ -431,7 +461,7 @@ export function AdminAuctions() {
                 <button
                   disabled={data.number + 1 >= data.totalPages}
                   onClick={() => setPage((p) => p + 1)}
-                  className="btn-secondary rounded px-3 py-1 text-xs disabled:opacity-40"
+                  className="btn-secondary px-3 py-1 text-xs disabled:opacity-40"
                 >
                   Next
                 </button>
@@ -440,6 +470,62 @@ export function AdminAuctions() {
           </div>
         </>
       )}
+
+      {orderAuctionId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="surface-panel w-full max-w-lg p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-sm font-medium uppercase tracking-widest text-[var(--text-secondary)]">Winner Order</h3>
+              <button
+                onClick={() => setOrderAuctionId(null)}
+                className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
+              >
+                Close
+              </button>
+            </div>
+
+            {orderQuery.isLoading && <p className="text-sm text-[var(--text-secondary)]">Loading order...</p>}
+            {orderQuery.isError && <p className="text-sm text-[var(--text-tertiary)]">No order found for this auction.</p>}
+
+            {orderQuery.data && (
+              <dl className="space-y-3 text-sm">
+                <OrderRow label="Status" value={orderQuery.data.status} />
+                <OrderRow label="Amount" value={`$${Number(orderQuery.data.amount).toFixed(2)} ${orderQuery.data.currency}`} />
+                <OrderRow label="Size" value={orderQuery.data.shirtSize ?? '—'} />
+                <OrderRow label="Provider" value={orderQuery.data.provider} />
+                {orderQuery.data.providerOrderId && (
+                  <OrderRow label="Provider Ref" value={orderQuery.data.providerOrderId} />
+                )}
+                {orderQuery.data.checkoutUrl && (
+                  <div className="flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-3">
+                    <dt className="text-[var(--text-secondary)]">Checkout URL</dt>
+                    <dd>
+                      <a
+                        href={orderQuery.data.checkoutUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="accent-link text-xs underline underline-offset-4"
+                      >
+                        Open link
+                      </a>
+                    </dd>
+                  </div>
+                )}
+                <OrderRow label="Created" value={new Date(orderQuery.data.createdAt).toLocaleString()} />
+              </dl>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function OrderRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-3 last:border-b-0 last:pb-0">
+      <dt className="text-[var(--text-secondary)]">{label}</dt>
+      <dd className="font-medium text-[var(--text-primary)]">{value}</dd>
     </div>
   )
 }

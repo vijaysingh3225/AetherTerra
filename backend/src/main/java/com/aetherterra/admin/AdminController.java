@@ -5,6 +5,7 @@ import com.aetherterra.auctions.AuctionRepository;
 import com.aetherterra.auctions.AuctionStatus;
 import com.aetherterra.bids.BidRepository;
 import com.aetherterra.common.ApiResponse;
+import com.aetherterra.orders.AuctionOrderRepository;
 import com.aetherterra.users.UserRepository;
 import com.aetherterra.users.UserRole;
 import jakarta.validation.Valid;
@@ -27,26 +28,41 @@ public class AdminController {
     private final UserRepository userRepository;
     private final AuctionRepository auctionRepository;
     private final BidRepository bidRepository;
+    private final AuctionOrderRepository auctionOrderRepository;
 
     public AdminController(UserRepository userRepository,
                            AuctionRepository auctionRepository,
-                           BidRepository bidRepository) {
+                           BidRepository bidRepository,
+                           AuctionOrderRepository auctionOrderRepository) {
         this.userRepository = userRepository;
         this.auctionRepository = auctionRepository;
         this.bidRepository = bidRepository;
+        this.auctionOrderRepository = auctionOrderRepository;
     }
 
     // ── Dashboard ─────────────────────────────────────────────────────────────
 
     @GetMapping("/dashboard")
     public ResponseEntity<ApiResponse<DashboardStatsDto>> dashboard() {
+        long pendingFulfillments = auctionOrderRepository
+                .countByStatus(com.aetherterra.orders.AuctionOrderStatus.PENDING_PAYMENT);
         var stats = new DashboardStatsDto(
                 userRepository.count(),
                 auctionRepository.countByStatus(AuctionStatus.LIVE),
                 bidRepository.count(),
-                0L
+                pendingFulfillments
         );
         return ResponseEntity.ok(ApiResponse.ok(stats));
+    }
+
+    @GetMapping("/auctions/{id}/order")
+    public ResponseEntity<?> getAuctionOrder(@PathVariable UUID id) {
+        if (auctionRepository.findById(id).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.message("Auction not found"));
+        }
+        return auctionOrderRepository.findByAuctionId(id)
+                .<ResponseEntity<?>>map(order -> ResponseEntity.ok(ApiResponse.ok(toOrderDto(order))))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.message("No order for this auction")));
     }
 
     // ── Users ─────────────────────────────────────────────────────────────────
@@ -209,6 +225,15 @@ public class AdminController {
                 a.getId(), a.getSlug(), a.getTitle(), a.getDescription(), a.getStatus(),
                 a.getStartingBid(), a.getCurrentBid(), a.getStartsAt(), a.getEndsAt(),
                 a.getCreatedById(), a.getCreatedAt(), a.getUpdatedAt(), bidCount);
+    }
+
+    private com.aetherterra.admin.AuctionOrderDto toOrderDto(com.aetherterra.orders.AuctionOrder o) {
+        return new com.aetherterra.admin.AuctionOrderDto(
+                o.getId(), o.getAuctionId(), o.getUserId(),
+                o.getAmount(), o.getCurrency(), o.getShirtSize(),
+                o.getProvider(), o.getProviderOrderId(), o.getCheckoutUrl(),
+                o.getStatus().name(), o.getCreatedAt(), o.getUpdatedAt()
+        );
     }
 
     private String generateSlug(String title) {

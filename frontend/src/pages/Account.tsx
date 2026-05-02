@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { loadStripe } from '@stripe/stripe-js'
+import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
 import { apiFetch } from '../lib/api'
 import { queryClient } from '../lib/queryClient'
 
@@ -9,18 +11,198 @@ interface UserProfile {
   role: string
   shirtSize: string | null
   emailVerified: boolean
-  paymentMethodBrand: string | null
-  paymentMethodLast4: string | null
+  paymentMethodReady: boolean
   paymentMethodAddedAt: string | null
 }
 
 const shirtSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
+const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined
+const stripePromise = STRIPE_KEY ? loadStripe(STRIPE_KEY) : null
+
+// ── Stripe card form (rendered inside <Elements>) ─────────────────────────────
+
+function StripeCardForm({ onSuccess }: { onSuccess: () => void }) {
+  const stripe = useStripe()
+  const elements = useElements()
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!stripe || !elements) return
+    setError(null)
+    setSaving(true)
+    try {
+      const result = await stripe.confirmSetup({
+        elements,
+        confirmParams: { return_url: window.location.href },
+        redirect: 'if_required',
+      })
+      if (result.error) {
+        setError(result.error.message ?? 'Card setup failed.')
+      } else {
+        onSuccess()
+      }
+    } catch {
+      setError('An unexpected error occurred.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+      <PaymentElement />
+      <button
+        type="submit"
+        disabled={!stripe || saving}
+        className="btn-primary w-full px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {saving ? 'Saving...' : 'Save card'}
+      </button>
+      {error && <p className="notice-danger px-4 py-3 text-sm">{error}</p>}
+    </form>
+  )
+}
+
+// ── Payment method section ────────────────────────────────────────────────────
+
+function PaymentMethodSection({ profile }: { profile: UserProfile }) {
+  const [clientSecret, setClientSecret] = useState<string | null>(null)
+  const [feedback, setFeedback] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  async function startSetup() {
+    setFeedback(null)
+    setLoading(true)
+    try {
+      const result = await apiFetch<{ clientSecret: string }>(
+        '/api/v1/account/payment-method/setup-intent',
+        { method: 'POST' },
+      )
+      setClientSecret(result.clientSecret)
+    } catch (e) {
+      setFeedback(e instanceof Error ? e.message : 'Could not start card setup.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleSuccess() {
+    setClientSecret(null)
+    setFeedback('Card saved — your account is now bid-ready.')
+    await queryClient.invalidateQueries({ queryKey: ['me'] })
+  }
+
+  const isMock = !STRIPE_KEY
+
+  return (
+    <section className="surface-panel p-6">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h3 className="text-sm font-medium uppercase tracking-widest text-[var(--text-secondary)]">
+            Payment Method
+          </h3>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
+            {isMock
+              ? 'Running in mock mode — Stripe is not configured in this environment.'
+              : 'A card on file is required before your first bid is accepted.'}
+          </p>
+        </div>
+        <span className={`px-3 py-1 text-xs font-medium ${profile.paymentMethodReady ? 'status-live' : 'status-upcoming'}`}>
+          {profile.paymentMethodReady ? 'Ready' : 'Not saved'}
+        </span>
+      </div>
+
+      {profile.paymentMethodReady ? (
+        <p className="mt-4 text-sm text-[var(--text-secondary)]">
+          Payment method confirmed.
+          {profile.paymentMethodAddedAt && (
+            <> Added {new Date(profile.paymentMethodAddedAt).toLocaleDateString()}.</>
+          )}
+        </p>
+      ) : isMock ? (
+        <MockPaymentMethodForm onSuccess={handleSuccess} />
+      ) : clientSecret ? (
+        <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'night' } }}>
+          <StripeCardForm onSuccess={handleSuccess} />
+        </Elements>
+      ) : (
+        <button
+          onClick={startSetup}
+          disabled={loading}
+          className="btn-primary mt-5 px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {loading ? 'Loading...' : 'Add a card'}
+        </button>
+      )}
+
+      {feedback && <p className="notice-success mt-4 px-4 py-3 text-sm">{feedback}</p>}
+    </section>
+  )
+}
+
+// ── Mock payment method form (local dev only, no Stripe key) ─────────────────
+
+function MockPaymentMethodForm({ onSuccess }: { onSuccess: () => void }) {
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleMockSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setError(null)
+    setSubmitting(true)
+    try {
+      // 1. Create setup intent → backend assigns mock customer ID and returns it
+      const siResult = await apiFetch<{ clientSecret: string; customerId: string }>(
+        '/api/v1/account/payment-method/setup-intent',
+        { method: 'POST' },
+      )
+      // 2. Fire mock webhook to simulate Stripe's setup_intent.succeeded callback
+      await fetch('/api/v1/webhooks/stripe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'setup_intent.succeeded',
+          data: {
+            object: {
+              customer: siResult.customerId,
+              payment_method: 'mock_pm_dev_test',
+            },
+          },
+        }),
+      })
+      onSuccess()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Mock setup failed.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleMockSubmit} className="mt-5 space-y-3">
+      <p className="notice-warning px-4 py-3 text-sm">
+        Mock mode — Stripe is not configured. Click to simulate a successful card setup locally.
+      </p>
+      <button
+        type="submit"
+        disabled={submitting}
+        className="btn-primary w-full px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {submitting ? 'Activating...' : 'Activate mock card'}
+      </button>
+      {error && <p className="notice-danger px-4 py-3 text-sm">{error}</p>}
+    </form>
+  )
+}
+
+// ── Main Account page ─────────────────────────────────────────────────────────
+
 export function Account() {
   const [shirtSize, setShirtSize] = useState('M')
-  const [brand, setBrand] = useState('')
-  const [last4, setLast4] = useState('')
-  const [feedback, setFeedback] = useState<string | null>(null)
+  const [sizeFeedback, setSizeFeedback] = useState<string | null>(null)
 
   const profileQuery = useQuery({
     queryKey: ['me'],
@@ -34,50 +216,25 @@ export function Account() {
         body: JSON.stringify({ shirtSize: nextSize }),
       }),
     onSuccess: async (profile) => {
-      setFeedback('Shirt size saved.')
+      setSizeFeedback('Shirt size saved.')
       setShirtSize(profile.shirtSize ?? 'M')
       await queryClient.invalidateQueries({ queryKey: ['me'] })
     },
     onError: (error) => {
-      setFeedback(error instanceof Error ? error.message : 'Unable to save shirt size.')
-    },
-  })
-
-  const savePaymentMethod = useMutation({
-    mutationFn: (payload: { brand: string; last4: string }) =>
-      apiFetch<UserProfile>('/api/v1/users/me/payment-method', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      }),
-    onSuccess: async () => {
-      setFeedback('Payment method saved.')
-      setBrand('')
-      setLast4('')
-      await queryClient.invalidateQueries({ queryKey: ['me'] })
-    },
-    onError: (error) => {
-      setFeedback(error instanceof Error ? error.message : 'Unable to save payment method.')
+      setSizeFeedback(error instanceof Error ? error.message : 'Unable to save shirt size.')
     },
   })
 
   function handleSizeSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setFeedback(null)
+    setSizeFeedback(null)
     saveSize.mutate(shirtSize)
-  }
-
-  function handlePaymentSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setFeedback(null)
-    savePaymentMethod.mutate({ brand: brand.trim(), last4: last4.trim() })
   }
 
   const profile = profileQuery.data
 
   useEffect(() => {
-    if (profile?.shirtSize) {
-      setShirtSize(profile.shirtSize)
-    }
+    if (profile?.shirtSize) setShirtSize(profile.shirtSize)
   }, [profile?.shirtSize])
 
   if (profileQuery.isLoading) {
@@ -135,66 +292,21 @@ export function Account() {
             className="field-shell rounded px-4 py-3 text-sm outline-none"
           >
             {shirtSizes.map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
+              <option key={size} value={size}>{size}</option>
             ))}
           </select>
           <button
             type="submit"
             disabled={saveSize.isPending}
-            className="btn-primary rounded px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
+            className="btn-primary px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
           >
             {saveSize.isPending ? 'Saving...' : 'Save size'}
           </button>
         </form>
+        {sizeFeedback && <p className="notice-success mt-3 px-4 py-3 text-sm">{sizeFeedback}</p>}
       </section>
 
-      <section className="surface-panel p-6">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h3 className="text-sm font-medium uppercase tracking-widest text-[var(--text-secondary)]">Payment Method</h3>
-            <p className="mt-1 text-sm text-[var(--text-secondary)]">
-              Stripe is still pending, so this stores placeholder card details for bid eligibility.
-            </p>
-          </div>
-          <span className="status-upcoming px-3 py-1 text-xs font-medium">
-            {profile.paymentMethodBrand && profile.paymentMethodLast4
-              ? `${profile.paymentMethodBrand} ···· ${profile.paymentMethodLast4}`
-              : 'Not saved'}
-          </span>
-        </div>
-
-        <form className="mt-5 grid gap-3 sm:grid-cols-[1fr_140px_auto]" onSubmit={handlePaymentSubmit}>
-          <input
-            type="text"
-            value={brand}
-            onChange={(event) => setBrand(event.target.value)}
-            placeholder="Card brand"
-            className="field-shell rounded px-4 py-3 text-sm outline-none"
-          />
-          <input
-            type="text"
-            inputMode="numeric"
-            maxLength={4}
-            value={last4}
-            onChange={(event) => setLast4(event.target.value.replace(/\D/g, '').slice(0, 4))}
-            placeholder="Last 4"
-            className="field-shell rounded px-4 py-3 text-sm outline-none"
-          />
-          <button
-            type="submit"
-            disabled={savePaymentMethod.isPending}
-            className="btn-primary rounded px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {savePaymentMethod.isPending ? 'Saving...' : 'Save card'}
-          </button>
-        </form>
-      </section>
-
-      {feedback && (
-        <p className="notice-success px-4 py-3 text-sm">{feedback}</p>
-      )}
+      <PaymentMethodSection profile={profile} />
     </div>
   )
 }

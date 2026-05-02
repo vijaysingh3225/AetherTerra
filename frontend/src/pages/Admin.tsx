@@ -68,7 +68,7 @@ export function Admin() {
             <Link
               key={card.title}
               to={card.href}
-              className="surface-panel p-5 transition-all hover:border-[rgba(184,148,90,0.40)]"
+              className="surface-panel p-5 transition-all hover:border-[rgba(200,136,10,0.30)]"
             >
               <h3 className="text-sm font-medium text-[var(--text-primary)]">{card.title}</h3>
               <p className="mt-1 text-xs text-[var(--text-secondary)]">{card.desc}</p>

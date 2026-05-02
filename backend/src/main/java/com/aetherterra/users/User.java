@@ -24,11 +24,14 @@ public class User {
     @Column(name = "email_verified_at")
     private Instant emailVerifiedAt;
 
-    @Column(name = "payment_method_brand")
-    private String paymentMethodBrand;
+    @Column(name = "stripe_customer_id")
+    private String stripeCustomerId;
 
-    @Column(name = "payment_method_last4")
-    private String paymentMethodLast4;
+    @Column(name = "stripe_payment_method_id")
+    private String stripePaymentMethodId;
+
+    @Column(name = "payment_method_ready", nullable = false)
+    private boolean paymentMethodReady = false;
 
     @Column(name = "payment_method_added_at")
     private Instant paymentMethodAddedAt;
@@ -50,6 +53,13 @@ public class User {
         this.updatedAt = Instant.now();
     }
 
+    /** Called after Stripe confirms a payment method has been saved. */
+    public void markPaymentMethodReady(String stripePaymentMethodId) {
+        this.stripePaymentMethodId = stripePaymentMethodId;
+        this.paymentMethodReady = true;
+        this.paymentMethodAddedAt = Instant.now();
+    }
+
     public UUID getId() { return id; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
@@ -59,18 +69,14 @@ public class User {
     public void setShirtSize(String shirtSize) { this.shirtSize = shirtSize; }
     public Instant getEmailVerifiedAt() { return emailVerifiedAt; }
     public void setEmailVerifiedAt(Instant emailVerifiedAt) { this.emailVerifiedAt = emailVerifiedAt; }
-    public String getPaymentMethodBrand() { return paymentMethodBrand; }
-    public void setPaymentMethodBrand(String paymentMethodBrand) { this.paymentMethodBrand = paymentMethodBrand; }
-    public String getPaymentMethodLast4() { return paymentMethodLast4; }
-    public void setPaymentMethodLast4(String paymentMethodLast4) { this.paymentMethodLast4 = paymentMethodLast4; }
+    public String getStripeCustomerId() { return stripeCustomerId; }
+    public void setStripeCustomerId(String stripeCustomerId) { this.stripeCustomerId = stripeCustomerId; }
+    public String getStripePaymentMethodId() { return stripePaymentMethodId; }
+    public boolean isPaymentMethodReady() { return paymentMethodReady; }
+    public void setPaymentMethodReady(boolean paymentMethodReady) { this.paymentMethodReady = paymentMethodReady; }
     public Instant getPaymentMethodAddedAt() { return paymentMethodAddedAt; }
-    public void setPaymentMethodAddedAt(Instant paymentMethodAddedAt) { this.paymentMethodAddedAt = paymentMethodAddedAt; }
     public boolean isEmailVerified() { return emailVerifiedAt != null; }
     public boolean hasShirtSize() { return shirtSize != null && !shirtSize.isBlank(); }
-    public boolean hasSavedPaymentMethod() {
-        return paymentMethodBrand != null && !paymentMethodBrand.isBlank()
-                && paymentMethodLast4 != null && !paymentMethodLast4.isBlank();
-    }
     public UserRole getRole() { return role; }
     public void setRole(UserRole role) { this.role = role; }
     public Instant getCreatedAt() { return createdAt; }

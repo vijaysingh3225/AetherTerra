@@ -58,9 +58,7 @@ class AuctionControllerTest extends AbstractIntegrationTest {
         bidder.setRole(UserRole.BUYER);
         bidder.setEmailVerifiedAt(Instant.now());
         bidder.setShirtSize("L");
-        bidder.setPaymentMethodBrand("Visa");
-        bidder.setPaymentMethodLast4("4242");
-        bidder.setPaymentMethodAddedAt(Instant.now());
+        bidder.setPaymentMethodReady(true);
         bidder = userRepo.save(bidder);
     }
 
@@ -295,9 +293,7 @@ class AuctionControllerTest extends AbstractIntegrationTest {
     @Test
     void placeBid_requiresPaymentMethod() throws Exception {
         Auction auction = saveAuction("terra-one", AuctionStatus.LIVE);
-        bidder.setPaymentMethodBrand(null);
-        bidder.setPaymentMethodLast4(null);
-        bidder.setPaymentMethodAddedAt(null);
+        bidder.setPaymentMethodReady(false);
         userRepo.save(bidder);
         String token = jwtUtil.generate(bidder.getEmail(), bidder.getRole().name());
 
@@ -307,6 +303,71 @@ class AuctionControllerTest extends AbstractIntegrationTest {
                 .content(om.writeValueAsString(Map.of("amount", 125.00))))
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.message").value("Save a payment method before placing a bid"));
+    }
+
+    @Test
+    void placeBid_creatorCannotBidOnOwnAuction() throws Exception {
+        saveAuction("terra-one", AuctionStatus.LIVE);
+        // admin created the auction; admin also has full bidder profile
+        admin.setShirtSize("M");
+        admin.setPaymentMethodReady(true);
+        userRepo.save(admin);
+        String token = jwtUtil.generate(admin.getEmail(), admin.getRole().name());
+
+        mvc.perform(post("/api/v1/auctions/terra-one/bids")
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content(om.writeValueAsString(Map.of("amount", 125.00))))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("Auction creators cannot bid on their own auctions"));
+    }
+
+    @Test
+    void placeBid_belowStartingBid_returns400() throws Exception {
+        saveAuction("terra-one", AuctionStatus.LIVE); // startingBid = 100.00
+        String token = jwtUtil.generate(bidder.getEmail(), bidder.getRole().name());
+
+        mvc.perform(post("/api/v1/auctions/terra-one/bids")
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content(om.writeValueAsString(Map.of("amount", 50.00))))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void placeBid_equalToStartingBid_returns400() throws Exception {
+        saveAuction("terra-one", AuctionStatus.LIVE); // startingBid = 100.00
+        String token = jwtUtil.generate(bidder.getEmail(), bidder.getRole().name());
+
+        mvc.perform(post("/api/v1/auctions/terra-one/bids")
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content(om.writeValueAsString(Map.of("amount", 100.00))))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void placeBid_cancelledAuctionReturns400() throws Exception {
+        saveAuction("terra-one", AuctionStatus.CANCELLED);
+        String token = jwtUtil.generate(bidder.getEmail(), bidder.getRole().name());
+
+        mvc.perform(post("/api/v1/auctions/terra-one/bids")
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content(om.writeValueAsString(Map.of("amount", 125.00))))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void placeBid_zeroBidRejectedByValidation() throws Exception {
+        saveAuction("terra-one", AuctionStatus.LIVE);
+        String token = jwtUtil.generate(bidder.getEmail(), bidder.getRole().name());
+
+        mvc.perform(post("/api/v1/auctions/terra-one/bids")
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .content(om.writeValueAsString(Map.of("amount", 0.00))))
+            .andExpect(status().isBadRequest());
     }
 
     // -------------------------------------------------------------------------

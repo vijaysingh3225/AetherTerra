@@ -7,7 +7,6 @@ public record UserProfileDto(
         String role,
         String shirtSize,
         boolean emailVerified,
-        String paymentMethodBrand,
-        String paymentMethodLast4,
+        boolean paymentMethodReady,
         Instant paymentMethodAddedAt
 ) {}

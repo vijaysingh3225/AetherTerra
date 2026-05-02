@@ -13,19 +13,19 @@ export function Navbar() {
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     isActive
       ? 'text-[var(--accent)] underline underline-offset-4 decoration-[var(--accent)]'
-      : 'transition-colors hover:text-[var(--text-primary)]'
+      : 'text-[#b8a890] transition-colors hover:text-[#e8dfd0]'
 
   return (
-    <header className="border-b border-[var(--border-subtle)] bg-[rgba(7,8,11,0.88)] backdrop-blur-xl">
+    <header className="border-b border-[#3a2010] bg-[#1c0e04]">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link
           to="/"
-          className="flex items-center gap-2.5 text-xs font-medium tracking-[0.28em] uppercase text-[var(--text-primary)]"
+          className="font-display flex items-center gap-2.5 text-xs font-medium tracking-[0.28em] uppercase text-[#e8dfd0]"
         >
-          <span className="text-[var(--accent)]">✦</span>
+          <span className="text-[var(--accent)]">⚜</span>
           Aether Terra
         </Link>
-        <nav className="flex items-center gap-6 text-sm text-[var(--text-secondary)]">
+        <nav className="flex items-center gap-6 text-sm">
           <NavLink to="/auctions" className={linkClass}>
             Auctions
           </NavLink>
@@ -42,7 +42,7 @@ export function Navbar() {
               </NavLink>
               <button
                 onClick={handleLogout}
-                className="btn-secondary rounded px-4 py-1.5 text-sm transition-colors"
+                className="font-display border border-[rgba(184,160,128,0.40)] px-4 py-1.5 text-sm tracking-[0.06em] text-[#b8a890] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
               >
                 Sign Out
               </button>
@@ -50,7 +50,7 @@ export function Navbar() {
           ) : (
             <NavLink
               to="/login"
-              className="btn-primary rounded px-4 py-1.5 text-sm font-medium transition-all"
+              className="btn-primary px-4 py-1.5 text-sm font-medium transition-all"
             >
               Sign In
             </NavLink>

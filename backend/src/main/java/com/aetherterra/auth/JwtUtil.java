@@ -27,6 +27,7 @@ public class JwtUtil {
     public String generate(String email, String role) {
         return Jwts.builder()
                 .subject(email)
+                .issuer("aetherterra")
                 .claim("role", role)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiryMs))
@@ -37,6 +38,7 @@ public class JwtUtil {
     public Claims parse(String token) {
         return Jwts.parser()
                 .verifyWith(key)
+                .requireIssuer("aetherterra")
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

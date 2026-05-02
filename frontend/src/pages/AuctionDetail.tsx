@@ -31,8 +31,7 @@ interface UserProfile {
   role: string
   shirtSize: string | null
   emailVerified: boolean
-  paymentMethodBrand: string | null
-  paymentMethodLast4: string | null
+  paymentMethodReady: boolean
   paymentMethodAddedAt: string | null
 }
 
@@ -89,8 +88,6 @@ export function AuctionDetail() {
   const [feedback, setFeedback] = useState<string | null>(null)
   const [setupFeedback, setSetupFeedback] = useState<string | null>(null)
   const [shirtSize, setShirtSize] = useState('M')
-  const [brand, setBrand] = useState('')
-  const [last4, setLast4] = useState('')
 
   const detailQuery = useQuery({
     queryKey: ['auction', slug],
@@ -123,23 +120,6 @@ export function AuctionDetail() {
     },
     onError: (error) => {
       setSetupFeedback(error instanceof Error ? error.message : 'Unable to save shirt size.')
-    },
-  })
-
-  const savePaymentMethod = useMutation({
-    mutationFn: (payload: { brand: string; last4: string }) =>
-      apiFetch<UserProfile>('/api/v1/users/me/payment-method', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      }),
-    onSuccess: async () => {
-      setSetupFeedback('Payment method saved. Your account is updated for bidding.')
-      setBrand('')
-      setLast4('')
-      await queryClient.invalidateQueries({ queryKey: ['me'] })
-    },
-    onError: (error) => {
-      setSetupFeedback(error instanceof Error ? error.message : 'Unable to save payment method.')
     },
   })
 
@@ -188,8 +168,8 @@ export function AuctionDetail() {
         {
           key: 'payment',
           label: 'Saved payment method',
-          met: Boolean(profile.paymentMethodBrand && profile.paymentMethodLast4),
-          hint: 'Add a placeholder card now. Stripe comes later.',
+          met: profile.paymentMethodReady,
+          hint: 'Add a card from your account page before bidding.',
         },
       ]
     : []
@@ -206,10 +186,17 @@ export function AuctionDetail() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setFeedback(null)
+    if (placeBid.isPending) return
 
     const numericAmount = Number(amount)
     if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
       setFeedback('Enter a valid bid amount.')
+      return
+    }
+
+    const floor = auction?.currentBid ?? auction?.startingBid ?? 0
+    if (numericAmount <= floor) {
+      setFeedback(`Bid must be greater than $${floor.toLocaleString('en-US', { minimumFractionDigits: 2 })}`)
       return
     }
 
@@ -220,12 +207,6 @@ export function AuctionDetail() {
     event.preventDefault()
     setSetupFeedback(null)
     saveSize.mutate(shirtSize)
-  }
-
-  function handlePaymentSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setSetupFeedback(null)
-    savePaymentMethod.mutate({ brand: brand.trim(), last4: last4.trim() })
   }
 
   if (detailQuery.isLoading) {
@@ -354,14 +335,14 @@ export function AuctionDetail() {
                 value={amount}
                 onChange={(event) => setAmount(event.target.value)}
                 disabled={!canBid || placeBid.isPending}
-                className="field-shell w-full rounded px-4 py-3 outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                className="field-shell w-full px-4 py-3 outline-none disabled:cursor-not-allowed disabled:opacity-50"
               />
             </label>
 
             <button
               type="submit"
               disabled={!canBid || placeBid.isPending}
-              className="btn-primary w-full rounded px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
+              className="btn-primary w-full px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
             >
               {placeBid.isPending ? 'Placing bid...' : 'Place Bid'}
             </button>
@@ -430,7 +411,7 @@ export function AuctionDetail() {
               <button
                 type="submit"
                 disabled={saveSize.isPending}
-                className="btn-primary rounded px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
+                className="btn-primary px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {saveSize.isPending ? 'Saving...' : 'Save size'}
               </button>
@@ -438,37 +419,18 @@ export function AuctionDetail() {
           </section>
         )}
 
-        {user && profile && !(profile.paymentMethodBrand && profile.paymentMethodLast4) && (
+        {user && profile && !profile.paymentMethodReady && (
           <section className="surface-panel p-6">
             <h3 className="text-sm font-medium uppercase tracking-widest text-[var(--text-secondary)]">Save Payment Method</h3>
             <p className="mt-2 text-xs leading-6 text-[var(--text-tertiary)]">
-              Add placeholder card details now so your account is bid-ready before Stripe lands.
+              A saved card is required before your first bid is accepted.
             </p>
-            <form className="mt-4 space-y-3" onSubmit={handlePaymentSubmit}>
-              <input
-                type="text"
-                value={brand}
-                onChange={(event) => setBrand(event.target.value)}
-                placeholder="Card brand"
-                className="field-shell w-full rounded px-4 py-3 text-sm outline-none"
-              />
-              <input
-                type="text"
-                inputMode="numeric"
-                maxLength={4}
-                value={last4}
-                onChange={(event) => setLast4(event.target.value.replace(/\D/g, '').slice(0, 4))}
-                placeholder="Last 4 digits"
-                className="field-shell w-full rounded px-4 py-3 text-sm outline-none"
-              />
-              <button
-                type="submit"
-                disabled={savePaymentMethod.isPending}
-                className="btn-primary w-full rounded px-4 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {savePaymentMethod.isPending ? 'Saving...' : 'Save card'}
-              </button>
-            </form>
+            <Link
+              to="/account"
+              className="btn-primary mt-4 inline-block px-4 py-3 text-sm font-medium"
+            >
+              Add card on Account page
+            </Link>
           </section>
         )}
 

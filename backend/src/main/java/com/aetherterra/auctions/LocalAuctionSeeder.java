@@ -128,6 +128,7 @@ public class LocalAuctionSeeder implements ApplicationRunner {
 
     private void removeLegacySamples(List<String> legacySlugs) {
         legacySlugs.forEach(slug -> auctionRepository.findBySlug(slug).ifPresent(auction -> {
+            jdbcTemplate.update("DELETE FROM auction_orders WHERE auction_id = ?", auction.getId());
             jdbcTemplate.update("DELETE FROM bids WHERE auction_id = ?", auction.getId());
             auctionRepository.delete(auction);
         }));
@@ -141,6 +142,9 @@ public class LocalAuctionSeeder implements ApplicationRunner {
             user.setRole(UserRole.BUYER);
             user.setShirtSize(shirtSize);
             user.setEmailVerifiedAt(Instant.now());
+            // Mark payment method ready so local dev bidders can place bids immediately
+            user.markPaymentMethodReady("mock_pm_local_seed");
+            user.setStripeCustomerId("mock_cus_local_" + email.replace("@", "_").replace(".", "_"));
             return userRepository.save(user);
         });
     }

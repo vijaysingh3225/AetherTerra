@@ -15,7 +15,7 @@ export function Home() {
         <div className="mt-10 flex justify-center">
           <Link
             to="/auctions"
-            className="btn-primary rounded px-7 py-3 text-sm font-medium tracking-wide transition-all"
+            className="btn-primary px-7 py-3 text-sm font-medium tracking-wide transition-all"
           >
             View Live Auctions
           </Link>

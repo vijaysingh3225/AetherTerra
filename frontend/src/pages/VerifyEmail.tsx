@@ -45,7 +45,7 @@ export function VerifyEmail() {
           <p className="mb-6 text-[var(--text-secondary)]">{message}</p>
           <Link
             to="/login"
-            className="btn-primary rounded px-6 py-2.5 text-sm font-medium"
+            className="btn-primary px-6 py-2.5 text-sm font-medium"
           >
             Sign In
           </Link>

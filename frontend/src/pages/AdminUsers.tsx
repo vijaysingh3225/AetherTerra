@@ -123,7 +123,7 @@ export function AdminUsers() {
                   </tr>
                 ) : (
                   data.content.map((u) => (
-                    <tr key={u.id} className="transition-colors hover:bg-[rgba(184,148,90,0.04)]">
+                    <tr key={u.id} className="transition-colors hover:bg-[rgba(200,136,10,0.05)]">
                       <td className="px-4 py-3 text-[var(--text-primary)]">{u.email}</td>
                       <td className="px-4 py-3">
                         <span
@@ -172,7 +172,7 @@ export function AdminUsers() {
                 <button
                   disabled={data.number === 0}
                   onClick={() => setPage((p) => p - 1)}
-                  className="btn-secondary rounded px-3 py-1 text-xs disabled:opacity-40"
+                  className="btn-secondary px-3 py-1 text-xs disabled:opacity-40"
                 >
                   Previous
                 </button>
@@ -182,7 +182,7 @@ export function AdminUsers() {
                 <button
                   disabled={data.number + 1 >= data.totalPages}
                   onClick={() => setPage((p) => p + 1)}
-                  className="btn-secondary rounded px-3 py-1 text-xs disabled:opacity-40"
+                  className="btn-secondary px-3 py-1 text-xs disabled:opacity-40"
                 >
                   Next
                 </button>

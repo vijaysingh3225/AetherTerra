@@ -25,6 +25,15 @@ aetherterra:
     base-url: ${APP_BASE_URL}
   mail:
     from: ${MAIL_FROM}
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY}
+    publishable-key: ${STRIPE_PUBLISHABLE_KEY}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET}
+  shopify:
+    shop-domain: ${SHOPIFY_SHOP_DOMAIN}
+    api-version: ${SHOPIFY_API_VERSION:2025-01}
+    access-token: ${SHOPIFY_ACCESS_TOKEN}
+    mock-mode: false
 
 management:
   endpoint:
