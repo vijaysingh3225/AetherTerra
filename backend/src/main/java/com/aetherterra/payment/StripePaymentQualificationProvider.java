@@ -46,7 +46,7 @@ public class StripePaymentQualificationProvider implements PaymentQualificationP
                 customerId = customer.getId();
                 user.setStripeCustomerId(customerId);
                 userRepository.save(user);
-                log.info("Created Stripe customer {} for user {}", customerId, user.getEmail());
+                log.info("Created Stripe customer {} for user {}", customerId, user.getId());
             }
 
             var siParams = SetupIntentCreateParams.builder()
@@ -54,24 +54,42 @@ public class StripePaymentQualificationProvider implements PaymentQualificationP
                     .setUsage(SetupIntentCreateParams.Usage.OFF_SESSION)
                     .build();
             SetupIntent si = SetupIntent.create(siParams, options);
+            log.info("SetupIntent {} created for user {}", si.getId(), user.getId());
             return new SetupIntentResult(si.getClientSecret(), customerId);
         } catch (StripeException e) {
-            log.error("Stripe error creating SetupIntent for {}: {}", user.getEmail(), e.getMessage());
+            log.error("Stripe error creating SetupIntent for user {}: {}", user.getId(), e.getMessage());
             throw new RuntimeException("Failed to create payment setup: " + e.getMessage(), e);
         }
     }
 
     @Override
     public void processWebhookPayload(String payload, String sigHeader) {
-        com.stripe.model.Event event;
-        try {
-            event = Webhook.constructEvent(payload, sigHeader, webhookSecret);
-        } catch (SignatureVerificationException e) {
-            log.warn("Invalid Stripe webhook signature");
-            throw new SecurityException("Invalid webhook signature");
+        String eventType;
+
+        if (webhookSecret == null || webhookSecret.isBlank()) {
+            log.warn("STRIPE_WEBHOOK_SECRET not configured — skipping signature verification (dev mode only)");
+            try {
+                eventType = objectMapper.readTree(payload).path("type").asText(null);
+            } catch (Exception e) {
+                log.error("Failed to parse Stripe webhook payload: {}", e.getMessage());
+                return;
+            }
+        } else {
+            if (sigHeader == null || sigHeader.isBlank()) {
+                log.warn("Stripe webhook rejected: missing Stripe-Signature header");
+                throw new SecurityException("Invalid webhook signature");
+            }
+            try {
+                com.stripe.model.Event event = Webhook.constructEvent(payload, sigHeader, webhookSecret);
+                eventType = event.getType();
+            } catch (SignatureVerificationException e) {
+                log.warn("Invalid Stripe webhook signature");
+                throw new SecurityException("Invalid webhook signature");
+            }
         }
 
-        if (!"setup_intent.succeeded".equals(event.getType())) {
+        if (!"setup_intent.succeeded".equals(eventType)) {
+            log.debug("Ignoring Stripe webhook event type: {}", eventType);
             return;
         }
 
@@ -88,12 +106,12 @@ public class StripePaymentQualificationProvider implements PaymentQualificationP
 
             userRepository.findByStripeCustomerId(customerId).ifPresentOrElse(user -> {
                 if (user.isPaymentMethodReady()) {
-                    log.debug("User {} already payment-method-ready; skipping", user.getEmail());
+                    log.debug("User {} already payment-method-ready; skipping", user.getId());
                     return;
                 }
                 user.markPaymentMethodReady(paymentMethodId);
                 userRepository.save(user);
-                log.info("Marked user {} as payment-method-ready via webhook", user.getEmail());
+                log.info("User {} marked payment-method-ready via Stripe webhook", user.getId());
             }, () -> log.warn("No user found for Stripe customer {}", customerId));
 
         } catch (Exception e) {

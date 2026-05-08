@@ -5,6 +5,7 @@ import com.aetherterra.auth.JwtUtil;
 import com.aetherterra.auctions.Auction;
 import com.aetherterra.auctions.AuctionRepository;
 import com.aetherterra.auctions.AuctionStatus;
+import com.aetherterra.bids.BidRepository;
 import com.aetherterra.users.User;
 import com.aetherterra.users.UserRepository;
 import com.aetherterra.users.UserRole;
@@ -21,7 +22,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Map;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -38,8 +38,9 @@ class PaymentAccountControllerTest extends AbstractIntegrationTest {
 
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper om;
-    @Autowired UserRepository userRepository;
+    @Autowired BidRepository bidRepository;
     @Autowired AuctionRepository auctionRepository;
+    @Autowired UserRepository userRepository;
     @Autowired PasswordEncoder encoder;
     @Autowired JwtUtil jwtUtil;
     @MockitoBean JavaMailSender mailSender;
@@ -49,6 +50,9 @@ class PaymentAccountControllerTest extends AbstractIntegrationTest {
 
     @BeforeEach
     void setup() {
+        // FK order: bids reference auctions and users; auctions reference users
+        bidRepository.deleteAll();
+        auctionRepository.deleteAll();
         userRepository.deleteAll();
 
         buyer = new User();
@@ -63,6 +67,8 @@ class PaymentAccountControllerTest extends AbstractIntegrationTest {
 
     @AfterEach
     void cleanup() {
+        bidRepository.deleteAll();
+        auctionRepository.deleteAll();
         userRepository.deleteAll();
     }
 
@@ -209,22 +215,49 @@ class PaymentAccountControllerTest extends AbstractIntegrationTest {
         auction.setStartingBid(new BigDecimal("100.00"));
         auction.setStartsAt(Instant.now().minusSeconds(3600));
         auction.setEndsAt(Instant.now().plusSeconds(86400));
-        auction.setCreatedById(UUID.randomUUID());
-        auction = auctionRepository.save(auction);
+        auction.setCreatedById(buyer.getId());
+        auctionRepository.save(auction);
 
         buyer.setShirtSize("M");
         buyer.setPaymentMethodReady(false);
         userRepository.save(buyer);
 
-        try {
-            mvc.perform(post("/api/v1/auctions/pay-test-auction/bids")
-                    .header("Authorization", "Bearer " + buyerToken)
-                    .contentType("application/json")
-                    .content(om.writeValueAsString(Map.of("amount", 150.00))))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.message").value("Save a payment method before placing a bid"));
-        } finally {
-            auctionRepository.delete(auction);
-        }
+        mvc.perform(post("/api/v1/auctions/pay-test-auction/bids")
+                .header("Authorization", "Bearer " + buyerToken)
+                .contentType("application/json")
+                .content(om.writeValueAsString(Map.of("amount", 150.00))))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.message").value("Save a payment method before placing a bid"));
+    }
+
+    @Test
+    void placeBid_userWithAllRequirementsMet_succeeds() throws Exception {
+        // Auction creator must differ from bidder — auction creators cannot bid on their own auctions
+        var creator = new User();
+        creator.setEmail("creator@example.com");
+        creator.setPasswordHash(encoder.encode("secret123"));
+        creator.setRole(UserRole.ADMIN);
+        creator.setEmailVerifiedAt(Instant.now());
+        creator = userRepository.save(creator);
+
+        var auction = new Auction();
+        auction.setSlug("pay-ready-auction");
+        auction.setTitle("Pay Ready Auction");
+        auction.setStatus(AuctionStatus.LIVE);
+        auction.setStartingBid(new BigDecimal("100.00"));
+        auction.setStartsAt(Instant.now().minusSeconds(3600));
+        auction.setEndsAt(Instant.now().plusSeconds(86400));
+        auction.setCreatedById(creator.getId());
+        auctionRepository.save(auction);
+
+        buyer.setShirtSize("L");
+        buyer.setPaymentMethodReady(true);
+        userRepository.save(buyer);
+
+        mvc.perform(post("/api/v1/auctions/pay-ready-auction/bids")
+                .header("Authorization", "Bearer " + buyerToken)
+                .contentType("application/json")
+                .content(om.writeValueAsString(Map.of("amount", 150.00))))
+            .andExpect(status().isCreated());
     }
 }

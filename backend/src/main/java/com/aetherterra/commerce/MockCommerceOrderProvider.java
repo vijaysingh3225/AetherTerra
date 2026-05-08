@@ -21,8 +21,8 @@ public class MockCommerceOrderProvider implements CommerceOrderProvider {
     public PostAuctionCheckoutResult createPostAuctionCheckout(PostAuctionCheckoutRequest request) {
         String mockOrderId = "MOCK-" + request.auctionSlug().toUpperCase() + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         String mockUrl = "http://localhost:8080/mock-checkout/" + mockOrderId;
-        log.info("Mock checkout created for auction '{}' winner {} — ref: {} url: {}",
-                request.auctionSlug(), request.winnerEmail(), mockOrderId, mockUrl);
+        log.info("Mock checkout created for auction '{}' (order {}) winner {} — ref: {} url: {}",
+                request.auctionSlug(), request.auctionOrderId(), request.winnerEmail(), mockOrderId, mockUrl);
         return new PostAuctionCheckoutResult(providerName(), mockOrderId, mockUrl);
     }
 

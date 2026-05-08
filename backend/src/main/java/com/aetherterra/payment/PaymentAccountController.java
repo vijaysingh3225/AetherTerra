@@ -47,10 +47,11 @@ public class PaymentAccountController {
             return ResponseEntity.status(401).body(ApiResponse.message("Unauthorized"));
         }
         boolean ready = paymentProvider.isPaymentMethodReady(user);
-        return ResponseEntity.ok(ApiResponse.ok(Map.of(
-                "paymentMethodReady", ready,
-                "paymentMethodAddedAt", user.getPaymentMethodAddedAt()
-        )));
+        // Map.of() rejects null values; use HashMap to allow paymentMethodAddedAt=null
+        var body = new java.util.HashMap<String, Object>();
+        body.put("paymentMethodReady", ready);
+        body.put("paymentMethodAddedAt", user.getPaymentMethodAddedAt());
+        return ResponseEntity.ok(ApiResponse.ok(body));
     }
 
     private User resolveUser(Authentication authentication) {

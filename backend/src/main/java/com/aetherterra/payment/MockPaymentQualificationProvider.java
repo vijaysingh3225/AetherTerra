@@ -44,8 +44,9 @@ public class MockPaymentQualificationProvider implements PaymentQualificationPro
             user.setStripeCustomerId(mockCustomerId);
             userRepository.save(user);
         }
-        String mockClientSecret = "mock_seti_" + UUID.randomUUID() + "_secret_mock";
-        log.info("Mock SetupIntent created for {} — clientSecret: {}", user.getEmail(), mockClientSecret);
+        String mockSetupIntentId = "mock_seti_" + UUID.randomUUID();
+        String mockClientSecret = mockSetupIntentId + "_secret_mock";
+        log.info("Mock SetupIntent {} created for user {}", mockSetupIntentId, user.getId());
         return new SetupIntentResult(mockClientSecret, user.getStripeCustomerId());
     }
 

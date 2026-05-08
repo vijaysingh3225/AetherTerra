@@ -44,6 +44,18 @@ public class AuctionOrder {
     @Column(nullable = false, length = 30)
     private AuctionOrderStatus status = AuctionOrderStatus.PENDING_PAYMENT;
 
+    @Column(name = "payment_due_at")
+    private Instant paymentDueAt;
+
+    @Column(name = "paid_at")
+    private Instant paidAt;
+
+    @Column(name = "expired_at")
+    private Instant expiredAt;
+
+    @Column(name = "failure_reason", length = 500)
+    private String failureReason;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
@@ -76,6 +88,14 @@ public class AuctionOrder {
     public void setCheckoutUrl(String checkoutUrl) { this.checkoutUrl = checkoutUrl; }
     public AuctionOrderStatus getStatus() { return status; }
     public void setStatus(AuctionOrderStatus status) { this.status = status; }
+    public Instant getPaymentDueAt() { return paymentDueAt; }
+    public void setPaymentDueAt(Instant paymentDueAt) { this.paymentDueAt = paymentDueAt; }
+    public Instant getPaidAt() { return paidAt; }
+    public void setPaidAt(Instant paidAt) { this.paidAt = paidAt; }
+    public Instant getExpiredAt() { return expiredAt; }
+    public void setExpiredAt(Instant expiredAt) { this.expiredAt = expiredAt; }
+    public String getFailureReason() { return failureReason; }
+    public void setFailureReason(String failureReason) { this.failureReason = failureReason; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }

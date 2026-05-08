@@ -21,7 +21,11 @@ public class PaymentProviderConfig {
     @Bean
     public PaymentQualificationProvider paymentQualificationProvider(UserRepository userRepository) {
         if (secretKey != null && !secretKey.isBlank()) {
-            log.info("PaymentQualificationProvider: Stripe (live)");
+            if (webhookSecret == null || webhookSecret.isBlank()) {
+                log.warn("PaymentQualificationProvider: Stripe mode active but STRIPE_WEBHOOK_SECRET is not set " +
+                         "— webhook signature verification will be skipped (set the secret from `stripe listen` output)");
+            }
+            log.info("PaymentQualificationProvider: Stripe (real mode)");
             return new StripePaymentQualificationProvider(secretKey, webhookSecret, userRepository);
         }
         return new MockPaymentQualificationProvider(userRepository);

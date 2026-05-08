@@ -228,11 +228,14 @@ public class AdminController {
     }
 
     private com.aetherterra.admin.AuctionOrderDto toOrderDto(com.aetherterra.orders.AuctionOrder o) {
+        boolean isMock = "MOCK".equalsIgnoreCase(o.getProvider());
         return new com.aetherterra.admin.AuctionOrderDto(
                 o.getId(), o.getAuctionId(), o.getUserId(),
                 o.getAmount(), o.getCurrency(), o.getShirtSize(),
-                o.getProvider(), o.getProviderOrderId(), o.getCheckoutUrl(),
-                o.getStatus().name(), o.getCreatedAt(), o.getUpdatedAt()
+                o.getProvider(), isMock, o.getProviderOrderId(), o.getCheckoutUrl(),
+                o.getStatus().name(),
+                o.getPaymentDueAt(), o.getPaidAt(), o.getExpiredAt(),
+                o.getCreatedAt(), o.getUpdatedAt()
         );
     }
 

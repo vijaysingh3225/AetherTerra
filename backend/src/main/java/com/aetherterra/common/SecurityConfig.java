@@ -47,6 +47,7 @@ public class SecurityConfig {
                 .requestMatchers(new RegexRequestMatcher("^(?!/api(?:/|$)|/actuator(?:/|$)).*$", HttpMethod.GET.name())).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/v1/auth/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/v1/webhooks/stripe", HttpMethod.POST.name())).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/v1/webhooks/shopify", HttpMethod.POST.name())).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/v1/auctions", HttpMethod.GET.name()),
                                  new AntPathRequestMatcher("/api/v1/auctions/**", HttpMethod.GET.name())).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/v1/admin/**")).hasRole("ADMIN")

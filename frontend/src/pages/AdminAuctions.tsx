@@ -28,9 +28,13 @@ interface AuctionOrder {
   currency: string
   shirtSize: string | null
   provider: string
+  mockProvider: boolean
   providerOrderId: string | null
   checkoutUrl: string | null
   status: string
+  paymentDueAt: string | null
+  paidAt: string | null
+  expiredAt: string | null
   createdAt: string
 }
 
@@ -492,7 +496,10 @@ export function AdminAuctions() {
                 <OrderRow label="Status" value={orderQuery.data.status} />
                 <OrderRow label="Amount" value={`$${Number(orderQuery.data.amount).toFixed(2)} ${orderQuery.data.currency}`} />
                 <OrderRow label="Size" value={orderQuery.data.shirtSize ?? '—'} />
-                <OrderRow label="Provider" value={orderQuery.data.provider} />
+                <OrderRow
+                  label="Provider"
+                  value={`${orderQuery.data.provider}${orderQuery.data.mockProvider ? ' (mock)' : ''}`}
+                />
                 {orderQuery.data.providerOrderId && (
                   <OrderRow label="Provider Ref" value={orderQuery.data.providerOrderId} />
                 )}
@@ -510,6 +517,24 @@ export function AdminAuctions() {
                       </a>
                     </dd>
                   </div>
+                )}
+                {orderQuery.data.paymentDueAt && (
+                  <OrderRow
+                    label="Payment Due"
+                    value={new Date(orderQuery.data.paymentDueAt).toLocaleString()}
+                  />
+                )}
+                {orderQuery.data.paidAt && (
+                  <OrderRow
+                    label="Paid At"
+                    value={new Date(orderQuery.data.paidAt).toLocaleString()}
+                  />
+                )}
+                {orderQuery.data.expiredAt && (
+                  <OrderRow
+                    label="Expired At"
+                    value={new Date(orderQuery.data.expiredAt).toLocaleString()}
+                  />
                 )}
                 <OrderRow label="Created" value={new Date(orderQuery.data.createdAt).toLocaleString()} />
               </dl>

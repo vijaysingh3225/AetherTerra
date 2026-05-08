@@ -13,11 +13,13 @@ import com.aetherterra.users.User;
 import com.aetherterra.users.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,19 +34,22 @@ public class AuctionScheduler {
     private final AuctionOrderRepository auctionOrderRepository;
     private final CommerceOrderProvider commerceOrderProvider;
     private final NotificationService notificationService;
+    private final long paymentDueHours;
 
     public AuctionScheduler(AuctionRepository auctionRepository,
                              BidRepository bidRepository,
                              UserRepository userRepository,
                              AuctionOrderRepository auctionOrderRepository,
                              CommerceOrderProvider commerceOrderProvider,
-                             NotificationService notificationService) {
+                             NotificationService notificationService,
+                             @Value("${aetherterra.payment.due-hours:24}") long paymentDueHours) {
         this.auctionRepository = auctionRepository;
         this.bidRepository = bidRepository;
         this.userRepository = userRepository;
         this.auctionOrderRepository = auctionOrderRepository;
         this.commerceOrderProvider = commerceOrderProvider;
         this.notificationService = notificationService;
+        this.paymentDueHours = paymentDueHours;
     }
 
     @Scheduled(fixedRate = 30_000, initialDelay = 30_000)
@@ -53,6 +58,22 @@ public class AuctionScheduler {
         Instant now = Instant.now();
         activateScheduled(now);
         endLive(now);
+    }
+
+    @Scheduled(fixedRate = 300_000, initialDelay = 60_000)
+    @Transactional
+    public void expireOverduePayments() {
+        List<AuctionOrder> overdue = auctionOrderRepository
+                .findAllByStatusAndPaymentDueAtBefore(AuctionOrderStatus.PENDING_PAYMENT, Instant.now());
+
+        for (AuctionOrder order : overdue) {
+            order.setStatus(AuctionOrderStatus.EXPIRED);
+            order.setExpiredAt(Instant.now());
+            order.setFailureReason("Payment deadline exceeded");
+            auctionOrderRepository.save(order);
+            log.info("AuctionOrder {} (auction {}) marked EXPIRED — payment deadline was {}",
+                    order.getId(), order.getAuctionId(), order.getPaymentDueAt());
+        }
     }
 
     private void activateScheduled(Instant now) {
@@ -90,9 +111,13 @@ public class AuctionScheduler {
     }
 
     /**
-     * Creates a winner checkout order via the CommerceOrderProvider and sends the winner
-     * a notification. Errors are logged but never propagate — the auction is already ENDED.
+     * Creates a winner checkout order via the CommerceOrderProvider and notifies the winner.
+     * Errors are logged but never propagate — the auction is already ENDED.
      * Idempotent: skips if an order already exists for this auction.
+     *
+     * Two-step save: the order is persisted first so we have a stable UUID to pass to the
+     * commerce provider as metadata. Shopify embeds it in the Draft Order's custom_attributes
+     * so the orders/paid webhook can find the order directly by ID rather than via auction_id.
      */
     private void processAuctionClose(Auction auction, Bid winningBid) {
         if (auctionOrderRepository.findByAuctionId(auction.getId()).isPresent()) {
@@ -106,39 +131,48 @@ public class AuctionScheduler {
             return;
         }
 
+        // Step 1 — persist the order now so we have a stable UUID for the provider call.
+        // Provider name is known before calling; providerOrderId and checkoutUrl come back after.
         AuctionOrder order = new AuctionOrder();
         order.setAuctionId(auction.getId());
         order.setUserId(winner.getId());
         if (winningBid != null) order.setWinningBidId(winningBid.getId());
         order.setAmount(auction.getCurrentBid());
         order.setShirtSize(winner.getShirtSize());
+        order.setProvider(commerceOrderProvider.providerName());
+        order.setStatus(AuctionOrderStatus.PENDING_PAYMENT);
+        AuctionOrder saved = auctionOrderRepository.save(order);
 
+        // Step 2 — call the provider with the stable order UUID embedded in the request.
         try {
             var request = new PostAuctionCheckoutRequest(
+                    saved.getId(),
                     auction.getId(),
                     auction.getSlug(),
                     auction.getTitle(),
                     winner.getEmail(),
                     auction.getCurrentBid(),
-                    winner.getShirtSize()
+                    winner.getShirtSize(),
+                    winningBid != null ? winningBid.getId() : null,
+                    winner.getId()
             );
             PostAuctionCheckoutResult result = commerceOrderProvider.createPostAuctionCheckout(request);
-            order.setProvider(result.provider());
-            order.setProviderOrderId(result.providerOrderId());
-            order.setCheckoutUrl(result.checkoutUrl());
-            order.setStatus(AuctionOrderStatus.PENDING_PAYMENT);
-            auctionOrderRepository.save(order);
+
+            // Step 3 — update with provider-specific results.
+            saved.setProviderOrderId(result.providerOrderId());
+            saved.setCheckoutUrl(result.checkoutUrl());
+            saved.setPaymentDueAt(Instant.now().plus(paymentDueHours, ChronoUnit.HOURS));
+            auctionOrderRepository.save(saved);
 
             notificationService.sendAuctionWonNotification(
                     winner.getEmail(), auction.getTitle(), auction.getCurrentBid(), result.checkoutUrl());
 
         } catch (Exception e) {
             log.error("Checkout creation failed for auction '{}': {}", auction.getSlug(), e.getMessage(), e);
-            order.setProvider(commerceOrderProvider.providerName());
-            order.setStatus(AuctionOrderStatus.FAILED);
-            auctionOrderRepository.save(order);
+            saved.setStatus(AuctionOrderStatus.FAILED);
+            saved.setFailureReason(e.getMessage());
+            auctionOrderRepository.save(saved);
 
-            // Best-effort notification without checkout URL
             try {
                 notificationService.sendAuctionWonNotification(
                         winner.getEmail(), auction.getTitle(), auction.getCurrentBid(), null);

@@ -14,6 +14,14 @@ import java.time.Duration;
 /**
  * Creates Shopify Draft Orders for auction winners using the Admin GraphQL API.
  * The winner receives an invoice email with a payment link (checkoutUrl).
+ *
+ * Custom attributes stored on the Draft Order (and inherited by the resulting Order):
+ *   auction_order_id — our AuctionOrder UUID; primary key for webhook matching
+ *   auction_id       — the Auction UUID; fallback key for webhook matching
+ *   winning_bid_id   — the winning Bid UUID
+ *   user_id          — the winner's User UUID
+ *   shirt_size       — the winner's shirt size at order time
+ *   source           — always "aetherterra_auction"
  */
 public class ShopifyCommerceOrderProvider implements CommerceOrderProvider {
 
@@ -56,9 +64,7 @@ public class ShopifyCommerceOrderProvider implements CommerceOrderProvider {
         String lineItemTitle = "Aether Terra — " + request.auctionTitle()
                 + (request.shirtSize() != null ? " (Size " + request.shirtSize() + ")" : "");
 
-        String variables = buildVariables(request.winnerEmail(), lineItemTitle,
-                request.winningBid().toPlainString(), request.auctionId().toString(),
-                request.shirtSize());
+        String variables = buildVariables(request, lineItemTitle);
 
         String body;
         try {
@@ -96,8 +102,8 @@ public class ShopifyCommerceOrderProvider implements CommerceOrderProvider {
             String orderName = order.path("name").asText();
             String invoiceUrl = order.path("invoiceUrl").asText(null);
 
-            log.info("Shopify Draft Order created: {} ({}) for auction '{}' winner {}",
-                    orderName, shopifyId, request.auctionSlug(), request.winnerEmail());
+            log.info("Shopify Draft Order created: {} ({}) for auction '{}' order {} winner {}",
+                    orderName, shopifyId, request.auctionSlug(), request.auctionOrderId(), request.winnerEmail());
 
             return new PostAuctionCheckoutResult(providerName(), shopifyId, invoiceUrl);
 
@@ -113,12 +119,16 @@ public class ShopifyCommerceOrderProvider implements CommerceOrderProvider {
         return "SHOPIFY";
     }
 
-    private String buildVariables(String email, String lineItemTitle, String price,
-                                  String auctionId, String shirtSize) {
-        String sizeAttr = shirtSize != null
+    private String buildVariables(PostAuctionCheckoutRequest request, String lineItemTitle) {
+        String sizeAttr = request.shirtSize() != null
                 ? """
-                  {"key": "shirt_size", "value": "%s"},
-                  """.formatted(shirtSize)
+                  {"key": "shirt_size",       "value": "%s"},
+                  """.formatted(request.shirtSize())
+                : "";
+        String bidAttr = request.winningBidId() != null
+                ? """
+                  {"key": "winning_bid_id",   "value": "%s"},
+                  """.formatted(request.winningBidId())
                 : "";
         return """
                 {
@@ -130,12 +140,24 @@ public class ShopifyCommerceOrderProvider implements CommerceOrderProvider {
                       "quantity": 1
                     }],
                     "customAttributes": [
+                      {"key": "auction_order_id", "value": "%s"},
+                      {"key": "auction_id",       "value": "%s"},
+                      {"key": "user_id",          "value": "%s"},
                       %s
-                      {"key": "auction_id", "value": "%s"},
-                      {"key": "source", "value": "aetherterra_auction"}
+                      %s
+                      {"key": "source",           "value": "aetherterra_auction"}
                     ]
                   }
                 }
-                """.formatted(email, lineItemTitle, price, sizeAttr, auctionId);
+                """.formatted(
+                request.winnerEmail(),
+                lineItemTitle,
+                request.winningBid().toPlainString(),
+                request.auctionOrderId(),
+                request.auctionId(),
+                request.userId(),
+                sizeAttr,
+                bidAttr
+        );
     }
 }

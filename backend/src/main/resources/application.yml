@@ -34,6 +34,9 @@ aetherterra:
     api-version: ${SHOPIFY_API_VERSION:2025-01}
     access-token: ${SHOPIFY_ACCESS_TOKEN:}
     mock-mode: ${SHOPIFY_MOCK_MODE:true}
+    webhook-secret: ${SHOPIFY_WEBHOOK_SECRET:}
+  payment:
+    due-hours: ${PAYMENT_DUE_HOURS:24}
 
 management:
   endpoints:
